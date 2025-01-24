@@ -3,8 +3,7 @@ rootProject.name = "storm2-example-plugin"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(
-    "example-looped-plugin",
-    "example-task-plugin",
+    "aio-rc-altar",
 )
 
 for (project in rootProject.children) {
