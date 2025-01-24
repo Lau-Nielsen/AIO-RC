@@ -1,6 +1,5 @@
 package net.storm.plugins.examples.looped.states;
 
-import net.runelite.api.TileObject;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.tiles.ITileObject;

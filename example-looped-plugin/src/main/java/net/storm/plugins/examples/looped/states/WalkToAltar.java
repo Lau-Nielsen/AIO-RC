@@ -1,7 +1,5 @@
 package net.storm.plugins.examples.looped.states;
 
-import net.runelite.api.events.GameTick;
-import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.plugins.examples.looped.ExampleLoopedConfig;
@@ -12,13 +10,8 @@ import net.storm.plugins.examples.looped.enums.States;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.movement.Movement;
-import net.storm.sdk.utils.MessageUtils;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class WalkToAltar implements StateMachineInterface {
-    private boolean clickedRuins = false;
-
     public void enterRuins(Altar altar) {
         IPlayer localPlayer = Players.getLocal();
         if(localPlayer != null) {

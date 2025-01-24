@@ -11,8 +11,6 @@ import net.storm.plugins.examples.looped.StateMachineInterface;
 import net.storm.plugins.examples.looped.enums.States;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
-import net.storm.sdk.movement.Movement;
-import net.storm.sdk.movement.Walker;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
