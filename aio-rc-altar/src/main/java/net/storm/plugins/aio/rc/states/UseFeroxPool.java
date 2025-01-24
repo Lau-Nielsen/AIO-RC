@@ -1,11 +1,13 @@
-package net.storm.plugins.examples.looped.states;
+package net.storm.plugins.aio.rc.states;
 
 import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.api.movement.pathfinder.model.BankLocation;
-import net.storm.plugins.examples.looped.*;
-import net.storm.plugins.examples.looped.enums.States;
+import net.storm.plugins.aio.rc.AIORCConfig;
+import net.storm.plugins.aio.rc.StateMachine;
+import net.storm.plugins.aio.rc.StateMachineInterface;
+import net.storm.plugins.aio.rc.enums.States;
 import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.Combat;
 import net.storm.sdk.items.Bank;
@@ -33,7 +35,9 @@ public class UseFeroxPool implements StateMachineInterface {
         boolean isFullRunEnergy = Movement.getRunEnergy() == 100;
         boolean isFullPrayer = Prayers.getMissingPoints() == 0;
 
-        if (stateMachine.getContext().getConfig().usePoolAtFerox()) {
+        AIORCConfig config = stateMachine.getContext().getConfig();
+
+        if (config.usePoolAtFerox()) {
             if(Bank.isOpen()) {
                 Bank.close();
             }
@@ -53,7 +57,7 @@ public class UseFeroxPool implements StateMachineInterface {
             if (hasClickedPool && isFullHP && isFullRunEnergy && isFullPrayer) {
                 this.startCountingTicks = true;
                 if(ticksSincePoolRefreshment.get() >= 2) {
-                    stateMachine.setState(new Banking(), false);
+                    stateMachine.setState(new WalkToAltar(), true);
                 }
             }
         } else {

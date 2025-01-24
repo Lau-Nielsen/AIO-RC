@@ -1,10 +1,10 @@
-package net.storm.plugins.examples.looped;
+package net.storm.plugins.aio.rc;
 
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.client.eventbus.EventBus;
-import net.storm.plugins.examples.looped.enums.States;
-import net.storm.plugins.examples.looped.states.Banking;
+import net.storm.plugins.aio.rc.enums.States;
+import net.storm.plugins.aio.rc.states.Banking;
 
 public class StateMachine {
     private StateMachineInterface currentState;

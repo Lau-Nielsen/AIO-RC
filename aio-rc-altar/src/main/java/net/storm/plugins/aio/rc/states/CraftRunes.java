@@ -1,25 +1,29 @@
-package net.storm.plugins.examples.looped.states;
+package net.storm.plugins.aio.rc.states;
 
 import net.runelite.api.ItemID;
 import net.runelite.api.Varbits;
 import net.runelite.client.eventbus.Subscribe;
+import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
+import net.storm.api.events.AnimationChanged;
 import net.storm.api.events.ExperienceGained;
 import net.storm.api.events.InventoryChanged;
 import net.storm.api.magic.SpellBook;
-import net.storm.plugins.examples.looped.ExampleLoopedConfig;
-import net.storm.plugins.examples.looped.SharedContext;
-import net.storm.plugins.examples.looped.StateMachine;
-import net.storm.plugins.examples.looped.StateMachineInterface;
-import net.storm.plugins.examples.looped.enums.EssPouch;
-import net.storm.plugins.examples.looped.enums.States;
+import net.storm.plugins.aio.rc.AIORCConfig;
+import net.storm.plugins.aio.rc.SharedContext;
+import net.storm.plugins.aio.rc.StateMachine;
+import net.storm.plugins.aio.rc.StateMachineInterface;
+import net.storm.plugins.aio.rc.enums.States;
+import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.Vars;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
+import net.storm.sdk.movement.Movement;
 
 public class CraftRunes implements StateMachineInterface {
+    boolean interactedWithAltar = false;
 
     @Subscribe
     private void onExperienceGained(ExperienceGained gained) {
@@ -29,6 +33,14 @@ public class CraftRunes implements StateMachineInterface {
     @Subscribe
     private void onInventoryChanged(InventoryChanged invChange) {
         // System.out.println("INVENTORY CHANGED: " + invChange.getAmount());
+    }
+
+    @Subscribe
+    public void onAnimationChanged(AnimationChanged e) {
+        if(e.getActor().getId() == Players.getLocal().getId() && e.getActor().getAnimation() == 791) {
+
+            e.getActor().setAnimation(-1);
+        }
     }
 
     private boolean hasSpace(int amount) {
@@ -64,18 +76,20 @@ public class CraftRunes implements StateMachineInterface {
     }
 
     private void craftRunes(SharedContext context) {
-        ITileObject altar = TileObjects.getNearest(obj -> obj.getId() == context.getConfig().runes().getAltarID());
+        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 20, context.getConfig().runes().getAltarID());
         if(context.getRuneNeededForComboRunesId() != null) {
             Inventory.getFirst(context.getRuneNeededForComboRunesId()).useOn(altar);
         } else {
             altar.interact("Craft-rune");
         }
+        this.interactedWithAltar = true;
     }
 
     @Override
     public void handleState(StateMachine stateMachine, States state) {
         SharedContext context = stateMachine.getContext();
-        ExampleLoopedConfig config = context.getConfig();
+        AIORCConfig config = context.getConfig();
+        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 2, context.getConfig().runes().getAltarID());
 
         if (config.bringBindingNecklace() && Inventory.contains(ItemID.BINDING_NECKLACE) &&
                 !Equipment.contains(ItemID.BINDING_NECKLACE)) {
@@ -87,13 +101,12 @@ public class CraftRunes implements StateMachineInterface {
             SpellBook.Lunar.MAGIC_IMBUE.cast();
         }
 
-        if(!Players.getLocal().isMoving() && !Players.getLocal().isAnimating()) {
+        if(!Movement.isWalking() && !interactedWithAltar) {
             craftRunes(context);
         }
 
         context.checkTotalEssencesInInv();
-        if (Players.getLocal().isAnimating() && Players.getLocal().getAnimation() == 791 &&
-                context.getTotalEssencesInInv() > 0) {
+        if (altar != null && context.getTotalEssencesInInv() > 0) {
             emptyPouches(context);
             craftRunes(context);
         }

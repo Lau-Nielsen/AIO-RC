@@ -1,10 +1,10 @@
-package net.storm.plugins.examples.looped;
+package net.storm.plugins.aio.rc;
 
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.ItemID;
 import net.runelite.client.game.ItemVariationMapping;
-import net.storm.plugins.examples.looped.enums.*;
+import net.storm.plugins.aio.rc.enums.*;
 import net.storm.sdk.game.Vars;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
@@ -28,6 +28,7 @@ public class SharedContext {
     private Integer gloriesInBank; // done
     private Integer runeNeededForComboRunesId; // done
     private Integer talismanNeededForComboRunes; // done
+    private Integer talismansRemaining; // done
     private boolean isUsingDuelingRings; // done
     private boolean isUsingGlories; // done
     private boolean isUsingEternalGlory; // done
@@ -40,9 +41,9 @@ public class SharedContext {
     private boolean isHatOfTheEyeCatalytic; // done
 
 
-    private ExampleLoopedConfig config;
+    private AIORCConfig config;
 
-    public SharedContext (ExampleLoopedConfig config) {
+    public SharedContext (AIORCConfig config) {
         this.config = config;
     }
 
@@ -195,7 +196,7 @@ public class SharedContext {
             if (this.config.airCombo() != AirRunes.AIR_RUNE) {
                 runeNeededForComboRunesId = this.config.airCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
-                    talismanNeededForComboRunes = this.config.airCombo().getOppositeRuneId();
+                    talismanNeededForComboRunes = this.config.airCombo().getOppositeTalismanId();
                 }
             }
         }
@@ -204,7 +205,7 @@ public class SharedContext {
             if (this.config.earthCombo() != EarthRunes.EARTH_RUNE) {
                 runeNeededForComboRunesId = this.config.earthCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
-                    talismanNeededForComboRunes = this.config.earthCombo().getOppositeRuneId();
+                    talismanNeededForComboRunes = this.config.earthCombo().getOppositeTalismanId();
                 }
             }
         }
@@ -213,7 +214,7 @@ public class SharedContext {
             if (this.config.fireCombo() != FireRunes.FIRE_RUNE) {
                 runeNeededForComboRunesId = this.config.fireCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
-                    talismanNeededForComboRunes = this.config.fireCombo().getOppositeRuneId();
+                    talismanNeededForComboRunes = this.config.fireCombo().getOppositeTalismanId();
                 }
             }
         }
@@ -222,10 +223,23 @@ public class SharedContext {
             if (this.config.waterCombo() != WaterRunes.WATER_RUNES) {
                 runeNeededForComboRunesId = this.config.waterCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
-                    talismanNeededForComboRunes = this.config.waterCombo().getOppositeRuneId();
+                    talismanNeededForComboRunes = this.config.waterCombo().getOppositeTalismanId();
                 }
             }
         }
+    }
+
+    public void checkRequiredTalismansInBank() {
+        this.talismansRemaining = Bank.getCount(true, this.talismanNeededForComboRunes);
+    }
+
+    public int talismansToWithdraw() {
+        if (this.talismansRemaining != null && Inventory.getFreeSlots() != 0) {
+            int maxEssence = maxEssenceCapacity();
+            return (int) Math.ceil((double) maxEssence / Inventory.getFreeSlots());
+        }
+
+        return 0;
     }
 
     public void checkStaminaDoses() {

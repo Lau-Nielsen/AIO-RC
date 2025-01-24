@@ -1,4 +1,4 @@
-package net.storm.plugins.examples.looped.states;
+package net.storm.plugins.aio.rc.states;
 
 import net.runelite.api.ItemID;
 import net.runelite.api.Quest;
@@ -7,10 +7,13 @@ import net.storm.api.domain.Identifiable;
 import net.storm.api.domain.items.IItem;
 import net.storm.api.items.loadouts.LoadoutItem;
 import net.storm.api.magic.SpellBook;
-import net.storm.plugins.examples.looped.*;
-import net.storm.plugins.examples.looped.enums.Altar;
-import net.storm.plugins.examples.looped.enums.Banks;
-import net.storm.plugins.examples.looped.enums.States;
+import net.storm.plugins.aio.rc.AIORCConfig;
+import net.storm.plugins.aio.rc.SharedContext;
+import net.storm.plugins.aio.rc.StateMachine;
+import net.storm.plugins.aio.rc.StateMachineInterface;
+import net.storm.plugins.aio.rc.enums.States;
+import net.storm.plugins.aio.rc.enums.Altar;
+import net.storm.plugins.aio.rc.enums.Banks;
 import net.storm.sdk.game.Skills;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
@@ -26,7 +29,7 @@ import java.util.stream.Collectors;
 public class Setup implements StateMachineInterface {
     private boolean forceAddressErrors = false;
 
-    private void questCheck(Quest quest, Altar altar, ExampleLoopedConfig config) {
+    private void questCheck(Quest quest, Altar altar, AIORCConfig config) {
         if (config.runes() == altar && !Quests.isFinished(quest)) {
             MessageUtils.addMessage("You cannot  " +
                             (config.isRunner() ? "run essences to " + altar.name()  : "craft " + altar.name() + " runes") +
@@ -64,7 +67,7 @@ public class Setup implements StateMachineInterface {
                 Equipment.getAll().stream().anyMatch(item -> tinderboxes.contains(item.getId()));
     }
 
-    private void abyssCheck(ExampleLoopedConfig config) {
+    private void abyssCheck(AIORCConfig config) {
         if(config.useAbyss()) {
             if(config.abyssRock() && !hasPickaxe()) {
                 MessageUtils.addMessage("Deselect rocks from abyss, or add a pickaxe to your loadout.", Color.red);
@@ -85,11 +88,17 @@ public class Setup implements StateMachineInterface {
                 MessageUtils.addMessage("Complete Enter the Abyss before using the Abyss.", Color.red);
                 forceAddressErrors = true;
             }
+
+            if(!config.abyssBoil() && !config.abyssGap() && !config.abyssRock() &&
+                    !config.abyssEyes() && !config.abyssTendrils() && !config.abyssPassage()) {
+                MessageUtils.addMessage("Select at least one obstacle to use in the abyss.", Color.red);
+                forceAddressErrors = true;
+            }
         }
 
     }
 
-    private void imbueCheck(ExampleLoopedConfig config) {
+    private void imbueCheck(AIORCConfig config) {
         if(config.useImbue()) {
             if(!SpellBook.Lunar.MAGIC_IMBUE.haveRunesAvailable()) {
                 MessageUtils.addMessage("You're either missing runes to cast Imbue add them to the loadout.", Color.red);
@@ -110,7 +119,7 @@ public class Setup implements StateMachineInterface {
         }
     }
 
-    private void npcContactCheck(ExampleLoopedConfig config) {
+    private boolean hasRcCapePerk() {
         List<Integer> rcPerkCapes = Arrays.asList(ItemID.MAX_CAPE, ItemID.RUNECRAFT_CAPE, ItemID.RUNECRAFT_CAPET, ItemID.MAX_CAPE_13342);
         boolean rcCapePerk = false;
         IItem myCape = Equipment.get(LoadoutItem.Slot.CAPE.getSlotIndex());
@@ -118,6 +127,12 @@ public class Setup implements StateMachineInterface {
         if(myCape != null) {
             rcCapePerk = rcPerkCapes.contains(myCape.getId());
         }
+
+        return rcCapePerk;
+    }
+
+    private void npcContactCheck(AIORCConfig config) {
+        boolean rcCapePerk = hasRcCapePerk();
 
         if(!rcCapePerk || !(config.useAbyss() && config.repairOnDarkMage())) {
             if(!SpellBook.Lunar.NPC_CONTACT.haveRunesAvailable()) {
@@ -145,7 +160,7 @@ public class Setup implements StateMachineInterface {
         forceAddressErrors = true;
     }
 
-    private void essencePouchCheck(ExampleLoopedConfig config, SharedContext sharedContext) {
+    private void essencePouchCheck(AIORCConfig config, SharedContext sharedContext) {
         Collection<LoadoutItem> items = config.loadout().getItems();
         int rcLevel = Skills.getLevel(Skill.RUNECRAFT);
 
@@ -191,7 +206,7 @@ public class Setup implements StateMachineInterface {
         }
     }
 
-    private void riftAccess(ExampleLoopedConfig config, SharedContext sharedContext) {
+    private void riftAccess(AIORCConfig config, SharedContext sharedContext) {
         boolean inventoryCheck = false;
         boolean equipmentCheck = false;
 
@@ -219,12 +234,22 @@ public class Setup implements StateMachineInterface {
                 forceAddressErrors = true;
             }
         }
+
+    }
+
+    private void comboRuneCheck(SharedContext sharedContext) {
+        if (sharedContext.getRuneNeededForComboRunesId() != null) {
+           if (!Inventory.contains(sharedContext.getRuneNeededForComboRunesId())) {
+               MessageUtils.addMessage("You're missing the required rune for this comboRune!", Color.red);
+               forceAddressErrors = true;
+           }
+        }
     }
 
     @Override
     public void handleState(StateMachine stateMachine, States state) {
         forceAddressErrors = false;
-        ExampleLoopedConfig config = stateMachine.getContext().getConfig();
+        AIORCConfig config = stateMachine.getContext().getConfig();
 
         questCheck(Quest.MOURNINGS_END_PART_II, Altar.DEATH, config);
         questCheck(Quest.LUNAR_DIPLOMACY, Altar.ASTRAL, config);
@@ -233,19 +258,17 @@ public class Setup implements StateMachineInterface {
         questCheck(Quest.CHILDREN_OF_THE_SUN, Altar.SUNFIRE, config);
         questCheck(Quest.DRAGON_SLAYER_II, Altar.WRATH, config);
 
+        comboRuneCheck(stateMachine.getContext());
         abyssCheck(config);
-        stateMachine.getContext().setComboRuneRequirementIds();
         imbueCheck(config);
         npcContactCheck(config);
         essencePouchCheck(config, stateMachine.getContext());
         riftAccess(config, stateMachine.getContext());
 
+        System.out.println(forceAddressErrors);
+
         if(!forceAddressErrors) {
-            if(config.usePoolAtFerox() && config.bank() == Banks.FEROX_ENCLAVE_BANK && config.poolBeforeBank()) {
-                stateMachine.setState(new UseFeroxPool(), true);
-            } else {
-                stateMachine.setState(new Banking(), false);
-            }
+            stateMachine.setState(new Banking(), true);
         }
 
     }

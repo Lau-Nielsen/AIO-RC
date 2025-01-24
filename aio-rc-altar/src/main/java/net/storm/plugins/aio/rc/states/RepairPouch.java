@@ -1,11 +1,13 @@
-package net.storm.plugins.examples.looped.states;
+package net.storm.plugins.aio.rc.states;
 
 import lombok.Setter;
 import net.storm.api.magic.SpellBook;
 import net.storm.api.widgets.InterfaceAddress;
-import net.storm.plugins.examples.looped.*;
-import net.storm.plugins.examples.looped.enums.Banks;
-import net.storm.plugins.examples.looped.enums.States;
+import net.storm.plugins.aio.rc.AIORCConfig;
+import net.storm.plugins.aio.rc.StateMachine;
+import net.storm.plugins.aio.rc.StateMachineInterface;
+import net.storm.plugins.aio.rc.enums.States;
+import net.storm.plugins.aio.rc.enums.Banks;
 import net.storm.sdk.items.Inventory;
 import net.storm.sdk.magic.Magic;
 import net.storm.sdk.widgets.Dialog;
@@ -17,7 +19,7 @@ public class RepairPouch implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine, States state) {
-        ExampleLoopedConfig config = stateMachine.getContext().getConfig();
+        AIORCConfig config = stateMachine.getContext().getConfig();
         if (Inventory.contains(26786)) {
             // TODO make sure this check is in SETUP
 
@@ -41,12 +43,10 @@ public class RepairPouch implements StateMachineInterface {
         } else {
             setWaitingForDialog(false);
 
-            if (config.usePoolAtFerox() && config.bank() == Banks.FEROX_ENCLAVE_BANK && !config.poolBeforeBank()) {
+            if (config.usePoolAtFerox() && config.bank() == Banks.FEROX_ENCLAVE_BANK) {
                 stateMachine.setState(new UseFeroxPool(), true);
-            } else if (!config.useAbyss()) {
-                stateMachine.setState(new WalkToAltar(), false);
-            } else if (config.useAbyss()) {
-                stateMachine.setState(new EnterAbyss(), false);
+            } else {
+                stateMachine.setState(new WalkToAltar(), true);
             }
         }
     }

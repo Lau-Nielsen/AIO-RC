@@ -1,15 +1,15 @@
-package net.storm.plugins.examples.looped;
+package net.storm.plugins.aio.rc;
 
 
 import net.storm.api.items.loadouts.Loadout;
 import net.storm.api.plugins.SoxExclude;
 import net.storm.api.plugins.config.*;
-import net.storm.plugins.examples.looped.enums.*;
+import net.storm.plugins.aio.rc.enums.*;
 
-@ConfigGroup(ExampleLoopedConfig.GROUP)
+@ConfigGroup(AIORCConfig.GROUP)
 @SoxExclude // Exclude from obfuscation
-public interface ExampleLoopedConfig extends Config {
-    String GROUP = "example-looped-plugin";
+public interface AIORCConfig extends Config {
+    String GROUP = "AIO RC";
 
     @ConfigSection(
             name = "Banking Section",
@@ -366,19 +366,6 @@ public interface ExampleLoopedConfig extends Config {
             section = bankingConfig
     )
     default boolean usePoolAtFerox() {
-        return false;
-    }
-
-    @ConfigItem(
-            keyName = "poolBeforeBank",
-            name = "Pool before bank?",
-            position = 6,
-            description = "Should the pool at ferox be used before banking?",
-            unhide =  "usePoolAtFerox",
-            hidden = true,
-            section = bankingConfig
-    )
-    default boolean poolBeforeBank() {
         return false;
     }
 

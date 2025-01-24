@@ -1,13 +1,13 @@
-package net.storm.plugins.examples.looped.states;
+package net.storm.plugins.aio.rc.states;
 
 import net.runelite.api.ItemID;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.actors.IPlayer;
-import net.storm.plugins.examples.looped.StateMachine;
-import net.storm.plugins.examples.looped.StateMachineInterface;
-import net.storm.plugins.examples.looped.enums.States;
+import net.storm.plugins.aio.rc.StateMachine;
+import net.storm.plugins.aio.rc.StateMachineInterface;
+import net.storm.plugins.aio.rc.enums.States;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.items.Inventory;
 import net.storm.sdk.items.Trade;

@@ -1,4 +1,4 @@
-package net.storm.plugins.examples.looped.enums;
+package net.storm.plugins.aio.rc.enums;
 
 import lombok.Getter;
 import net.runelite.api.ItemID;

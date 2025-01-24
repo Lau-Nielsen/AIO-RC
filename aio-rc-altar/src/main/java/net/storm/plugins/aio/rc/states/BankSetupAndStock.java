@@ -1,35 +1,35 @@
-package net.storm.plugins.examples.looped.states;
+package net.storm.plugins.aio.rc.states;
 
+import net.runelite.api.ItemID;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.ItemVariationMapping;
 import net.storm.api.items.loadouts.LoadoutItem;
-import net.storm.plugins.examples.looped.ExampleLoopedConfig;
-import net.storm.plugins.examples.looped.SharedContext;
-import net.storm.plugins.examples.looped.StateMachine;
-import net.storm.plugins.examples.looped.StateMachineInterface;
-import net.storm.plugins.examples.looped.enums.States;
+import net.storm.plugins.aio.rc.AIORCConfig;
+import net.storm.plugins.aio.rc.SharedContext;
+import net.storm.plugins.aio.rc.StateMachine;
+import net.storm.plugins.aio.rc.StateMachineInterface;
+import net.storm.plugins.aio.rc.enums.States;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
+import net.storm.sdk.items.loadouts.LoadoutHelper;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class BankSetupAndStock implements StateMachineInterface {
-    private AtomicInteger ticks = new AtomicInteger(0);
     Map<Integer, Integer> equipment = new HashMap<>();
     Map<Integer, Integer> inventoryEquipment = new HashMap<>();
     Map<Integer, Integer> withdrawnEquipment = new HashMap<>();
     private boolean checkedForLoadoutIds = false;
 
-    @Subscribe
-    private void onGameTick(GameTick tick) {
-        ticks.incrementAndGet();
-    }
+    private boolean isEquipmentCorrect(AIORCConfig config) {
+        return config.loadout().equipmentItemsIds().equals(LoadoutHelper.fromCurrentEquipment().build().equipmentItemsIds());
+    };
 
     // takes variants and checks your bank for variants findFirst ASSUMES some things
-    private void setEquipmentIds(ExampleLoopedConfig config) {
+    private void setEquipmentIds(AIORCConfig config) {
         Collection<LoadoutItem> items = config.loadout().getItems();
         List<LoadoutItem> equipmentLoadout = items.stream()
                 .filter(item -> item.getType() == LoadoutItem.Type.EQUIPMENT)
@@ -43,11 +43,15 @@ public class BankSetupAndStock implements StateMachineInterface {
                     .findFirst().ifPresent(id -> equipment.put(id, loadoutItem.getQuantity()));
         }
 
+        if(isEquipmentCorrect(config)) {
+            equipment.clear();
+        }
+
         equipment.forEach((id, quantity) -> System.out.println("EQUIPMENT: " + id + " " + quantity));
     }
 
     // Inventory ids shouldn't differ
-    private void setInventoryIds(ExampleLoopedConfig config) {
+    private void setInventoryIds(AIORCConfig config) {
         Collection<LoadoutItem> items = config.loadout().getItems();
 
         List<LoadoutItem> inventoryLoadout = items.stream()
@@ -64,7 +68,7 @@ public class BankSetupAndStock implements StateMachineInterface {
 
     }
 
-    private void withDrawLoadoutFromBank(ExampleLoopedConfig config) {
+    private void withDrawLoadoutFromBank(AIORCConfig config) {
         AtomicInteger actionCount = new AtomicInteger(0);
 
         Random random = new Random();
@@ -111,6 +115,11 @@ public class BankSetupAndStock implements StateMachineInterface {
             }
         }
 
+        if (!inventoryEquipment.isEmpty() &&
+                inventoryEquipment.containsKey(config.useDaeyalt() ? ItemID.DAEYALT_ESSENCE : ItemID.PURE_ESSENCE)) {
+            inventoryEquipment.remove(config.useDaeyalt() ? ItemID.DAEYALT_ESSENCE : ItemID.PURE_ESSENCE);
+        }
+
         // Withdraw the inventory
         if (inventoryEquipment != null && !inventoryEquipment.isEmpty() &&
                 equipment.isEmpty() && withdrawnEquipment.isEmpty() &&
@@ -139,14 +148,14 @@ public class BankSetupAndStock implements StateMachineInterface {
     @Override
     public void handleState(StateMachine stateMachine, States state) {
         SharedContext context = stateMachine.getContext();
-        ExampleLoopedConfig config = context.getConfig();
+        AIORCConfig config = context.getConfig();
 
         if(!Bank.isOpen() && !checkedForLoadoutIds) {
             Bank.open(config.bank().getBankLocation());
         }
 
         if(Bank.isOpen()) {
-            if(Equipment.getAll().isEmpty() && Bank.Inventory.getAll().isEmpty()){
+            if(Bank.Inventory.getAll().isEmpty()){
                 if (!checkedForLoadoutIds) {
                     setEquipmentIds(config);
                     setInventoryIds(config);
@@ -154,7 +163,9 @@ public class BankSetupAndStock implements StateMachineInterface {
                 }
             } else if (!checkedForLoadoutIds) {
                 Bank.depositInventory();
-                Bank.depositEquipment();
+                if (!isEquipmentCorrect(config)) {
+                    Bank.depositEquipment();
+                }
             }
 
             if(!equipment.isEmpty() || !withdrawnEquipment.isEmpty() || !inventoryEquipment.isEmpty()) {
@@ -182,6 +193,10 @@ public class BankSetupAndStock implements StateMachineInterface {
             context.setUsingSmallPouch(context.checkForSmallPouch());
             context.setUsingEternalGlory(context.checkForEternalGlory());
             context.setUsingRingOfElements(context.checkForRingOfElements());
+            context.setComboRuneRequirementIds();
+            if(context.getTalismanNeededForComboRunes() != null && !config.bringBindingNecklace()) {
+                context.checkRequiredTalismansInBank();
+            }
             context.checkIfHatIsCatalytic();
 
             if(context.isUsingRingOfElements()) {
