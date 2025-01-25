@@ -1,5 +1,6 @@
 package net.storm.plugins.aio.rc;
 
+import com.google.inject.Inject;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.ItemID;
@@ -15,17 +16,18 @@ import java.util.Collection;
 @Setter
 @Getter
 public class SharedContext {
-    private Integer chargesOnRingOfElement; // done
-    private Integer tripsCompleted = 0;
-    private Integer staminaDoses; // done
-    private Integer essenceInBank; // done
-    private Integer bindingNecklacesInBank; // done
+    private Integer chargesOnRingOfElement = 0; // done
+    private Integer tripsCompleted = 0; // done
+    private Integer staminaDoses = 0; // done
+    private Integer essenceInBank = 0; // done
+    private Integer bindingNecklacesInBank = 0; // done
     private Integer essencesTraded = 0;
     private Integer runesCrafted = 0;
     private Integer expGained = 0;
+    private double  estimatedGpEarned = 0;
     private Integer totalEssencesInInv = 0; // done
-    private Integer duelingRingsInBank; // done
-    private Integer gloriesInBank; // done
+    private Integer duelingRingsInBank = 0; // done
+    private Integer gloriesInBank = 0; // done
     private Integer runeNeededForComboRunesId; // done
     private Integer talismanNeededForComboRunes; // done
     private Integer talismansRemaining; // done
@@ -39,12 +41,50 @@ public class SharedContext {
     private boolean isUsingGiantPouch; // done
     private boolean isUsingColossalPouch; // done
     private boolean isHatOfTheEyeCatalytic; // done
+    private Runes currentlyCrafting; // done
+
+    private long startTime;
+    private long totalElapsedTime = 0;
+    private boolean isTimeTracking = false;
 
 
     private AIORCConfig config;
 
-    public SharedContext (AIORCConfig config) {
-        this.config = config;
+    @Inject
+    public SharedContext (){};
+
+    public void start() {
+        if (!isTimeTracking) {
+            this.startTime = System.currentTimeMillis();
+            this.isTimeTracking = true;
+        }
+    }
+
+    public void pause() {
+        if (isTimeTracking) {
+            this.totalElapsedTime += System.currentTimeMillis() - startTime;
+            this.isTimeTracking = false;
+        }
+    }
+
+    public long getElapsedMilliseconds() {
+        if (isTimeTracking) {
+            return (totalElapsedTime + (System.currentTimeMillis() - startTime));
+        } else {
+            return totalElapsedTime;
+        }
+    }
+
+    public String formatTime() {
+        long totalTime = this.getElapsedMilliseconds();
+
+        long hours = totalTime / 3600000;                // Calculate hours
+        long minutes = (totalTime % 3600000) / 60000;    // Calculate minutes
+        long seconds = (totalTime % 60000) / 1000;       // Calculate seconds
+        long milliseconds = totalTime % 1000;           // Calculate remaining milliseconds
+
+        // Format as HH:MM:SS.mmm with leading zeros
+        return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
     }
 
     public boolean checkForDuelingRing() {
@@ -212,7 +252,7 @@ public class SharedContext {
 
         if (this.config.runes().name().equals("FIRE")) {
             if (this.config.fireCombo() != FireRunes.FIRE_RUNE) {
-                runeNeededForComboRunesId = this.config.fireCombo().getOppositeRuneId();
+                this.runeNeededForComboRunesId = this.config.fireCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
                     talismanNeededForComboRunes = this.config.fireCombo().getOppositeTalismanId();
                 }
@@ -221,9 +261,9 @@ public class SharedContext {
 
         if (this.config.runes().name().equals("WATER")) {
             if (this.config.waterCombo() != WaterRunes.WATER_RUNES) {
-                runeNeededForComboRunesId = this.config.waterCombo().getOppositeRuneId();
+                this.runeNeededForComboRunesId = this.config.waterCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
-                    talismanNeededForComboRunes = this.config.waterCombo().getOppositeTalismanId();
+                    this.talismanNeededForComboRunes = this.config.waterCombo().getOppositeTalismanId();
                 }
             }
         }
@@ -240,6 +280,20 @@ public class SharedContext {
         }
 
         return 0;
+    }
+
+    public void checkCurrentRuneBeingCrafted() {
+        if (this.config.runes().name().equals("AIR")) {
+            currentlyCrafting = this.config.airCombo().getRune();
+        } else if (this.config.runes().name().equals("EARTH")) {
+            currentlyCrafting = this.config.earthCombo().getRune();
+        } else if (this.config.runes().name().equals("FIRE")) {
+            currentlyCrafting = this.config.fireCombo().getRune();
+        } else if (this.config.runes().name().equals("WATER")) {
+            currentlyCrafting = this.config.waterCombo().getRune();
+        } else {
+            currentlyCrafting = this.config.runes().getRune();
+        }
     }
 
     public void checkStaminaDoses() {

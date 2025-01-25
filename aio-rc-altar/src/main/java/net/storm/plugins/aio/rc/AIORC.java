@@ -2,10 +2,12 @@ package net.storm.plugins.aio.rc;
 
 import com.google.inject.Inject;
 import com.google.inject.Provides;
+import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.storm.api.events.ConfigButtonClicked;
 import net.storm.api.events.ConfigChanged;
 import net.storm.api.plugins.PluginDescriptor;
@@ -37,9 +39,20 @@ public class AIORC extends LoopedPlugin {
     @Inject
     private AIORCConfig config;
 
+    @Inject
+    private SharedContext context;
+
+    @Inject
+    private OverlayManager overlayManager;
+
+    @Inject
+    private AIORCOverlay overlay;
+
+    @Getter
     @Setter
     private RunningState runningState = RunningState.AWAITING_START;
 
+    @Getter
     @Setter
     private StateMachine stateMachine;
 
@@ -49,9 +62,11 @@ public class AIORC extends LoopedPlugin {
     public void onConfigButtonClicked(ConfigButtonClicked buttonClicked) {
         if (buttonClicked.getKey().equals("startPlugin")) {
             if (RunningState.RUNNING.equals(this.runningState)) {
+                stateMachine.getContext().pause();
                 setRunningState(RunningState.STOPPED);
             } else {
                 setRunningState(RunningState.RUNNING);
+                stateMachine.getContext().start();
                 if(stateMachine != null && stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
                     stateMachine.setState(new Setup(), false);
                 }
@@ -71,6 +86,12 @@ public class AIORC extends LoopedPlugin {
     public void onConfigChanged(ConfigChanged event) {
         if (stateMachine != null && stateMachine.getContext() != null) {
             stateMachine.getContext().setConfig(conManager.getConfig(AIORCConfig.class));
+
+            if(event.getKey().equals("runes") || event.getKey().equals("loadout") ||
+                    event.getKey().equals("airCombo") || event.getKey().equals("earthCombo") || event.getKey().equals("fireCombo") ||
+                    event.getKey().equals("waterCombo")) {
+                stateMachine.setState(new BankSetupAndStock(), true);
+            }
         }
     }
 
@@ -79,8 +100,10 @@ public class AIORC extends LoopedPlugin {
         this.ticks.incrementAndGet();
 
         if (isRunning() && this.stateMachine == null) {
-            setStateMachine(new StateMachine(new SharedContext(config), eventBus));
+            setStateMachine(new StateMachine(context, eventBus));
             this.stateMachine.setState(new BankSetupAndStock(), true);
+            this.stateMachine.getContext().checkCurrentRuneBeingCrafted();
+            System.out.println(this.stateMachine.getContext().getCurrentlyCrafting());
             System.out.println("Initializing Example Looped Plugin");
         }
 
@@ -97,8 +120,20 @@ public class AIORC extends LoopedPlugin {
     }
 
     @Override
+    public void startUp() throws Exception
+    {
+        overlayManager.add(overlay);
+    }
+
+    @Override
+    public void shutDown() throws Exception
+    {
+        overlayManager.remove(overlay);
+    }
+
+    @Override
     protected int loop() {
-        return 50; // Sleep for 1000 milliseconds
+        return 1000; // Sleep for 1000 milliseconds
     }
 
 

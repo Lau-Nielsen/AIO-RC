@@ -107,6 +107,7 @@ public class WalkToAltar implements StateMachineInterface {
 
                 if(ruinTileObject.getId() == altar.getRuinID()) {
                     ruinTileObject.interact("Enter");
+                    startCounting = true;
                 }
             }
         }
@@ -128,13 +129,12 @@ public class WalkToAltar implements StateMachineInterface {
         }
 
         if (!config.useAbyss()) {
-            if (!Movement.isWalking() && !closeToAltar) {
+            if (!Movement.isWalking() && !closeToAltar && !startCounting) {
                 altar.walkToAltar();
             }
 
             if (!closeToAltar && counter.get() % 5 == 0) {
                 enterRuins(altar);
-                startCounting = true;
             }
         } else {
             WorldPoint myWorldPoint = Players.getLocal().getWorldArea().toWorldPoint();

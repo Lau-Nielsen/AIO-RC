@@ -134,7 +134,7 @@ public class Setup implements StateMachineInterface {
     private void npcContactCheck(AIORCConfig config) {
         boolean rcCapePerk = hasRcCapePerk();
 
-        if(!rcCapePerk || !(config.useAbyss() && config.repairOnDarkMage())) {
+        if(!rcCapePerk && !config.useAbyss() && !config.repairOnDarkMage()) {
             if(!SpellBook.Lunar.NPC_CONTACT.haveRunesAvailable()) {
                 MessageUtils.addMessage("You're either missing runes to cast NPC Contact add them to the loadout", Color.ORANGE);
                 MessageUtils.addMessage("If you want your pouches repaired", Color.ORANGE);

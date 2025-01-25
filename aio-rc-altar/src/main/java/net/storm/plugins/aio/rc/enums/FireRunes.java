@@ -3,22 +3,22 @@ package net.storm.plugins.aio.rc.enums;
 import lombok.Getter;
 import net.runelite.api.ItemID;
 
+@Getter
 public enum FireRunes {
-    LAVA_RUNE(ItemID.LAVA_RUNE, ItemID.EARTH_RUNE, ItemID.EARTH_TALISMAN),
-    STEAM_RUNE(ItemID.STEAM_RUNE, ItemID.WATER_RUNE, ItemID.WATER_TALISMAN),
-    SMOKE_RUNE(ItemID.SMOKE_RUNE, ItemID.AIR_RUNE, ItemID.AIR_TALISMAN),
-    FIRE_RUNE(ItemID.FIRE_RUNE, null, null);
+    LAVA_RUNE(ItemID.LAVA_RUNE, ItemID.EARTH_RUNE, ItemID.EARTH_TALISMAN, Runes.LAVA),
+    STEAM_RUNE(ItemID.STEAM_RUNE, ItemID.WATER_RUNE, ItemID.WATER_TALISMAN, Runes.STEAM),
+    SMOKE_RUNE(ItemID.SMOKE_RUNE, ItemID.AIR_RUNE, ItemID.AIR_TALISMAN, Runes.SMOKE),
+    FIRE_RUNE(ItemID.FIRE_RUNE, null, null, Runes.FIRE);
 
-    @Getter
     private final int runeID;
-    @Getter
     private final Integer oppositeRuneId;
-    @Getter
     private final Integer oppositeTalismanId;
+    private Runes rune;
 
-    FireRunes(int runeID, Integer oppositeRuneId, Integer oppositeTalismanId) {
+    FireRunes(int runeID, Integer oppositeRuneId, Integer oppositeTalismanId, Runes rune) {
         this.runeID = runeID;
         this.oppositeRuneId = oppositeRuneId;
         this.oppositeTalismanId = oppositeTalismanId;
+        this.rune = rune;
     }
 }

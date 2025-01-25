@@ -150,7 +150,7 @@ public interface AIORCConfig extends Config {
             section = bankingConfig
     )
     default boolean bankCraftedRunes() {
-        return false;
+        return true;
     }
 
     @ConfigItem(

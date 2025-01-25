@@ -1,6 +1,7 @@
 package net.storm.plugins.aio.rc.states;
 
 import net.runelite.api.ItemID;
+import net.runelite.api.Skill;
 import net.runelite.api.Varbits;
 import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.actors.IPlayer;
@@ -27,7 +28,9 @@ public class CraftRunes implements StateMachineInterface {
 
     @Subscribe
     private void onExperienceGained(ExperienceGained gained) {
-        System.out.println("Gained: " + gained.getXpGained());
+        if(gained.getSkill() == Skill.RUNECRAFT) {
+
+        }
     }
 
     @Subscribe

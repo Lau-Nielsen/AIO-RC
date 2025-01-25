@@ -3,7 +3,9 @@ package net.storm.plugins.aio.rc.states;
 import lombok.Setter;
 import net.runelite.api.ItemID;
 import net.storm.api.events.AnimationChanged;
+import net.storm.api.items.loadouts.LoadoutItem;
 import net.storm.api.magic.Rune;
+import net.storm.api.widgets.EquipmentSlot;
 import net.storm.plugins.aio.rc.AIORCConfig;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
@@ -13,6 +15,7 @@ import net.storm.plugins.aio.rc.enums.Banks;
 import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.items.Bank;
+import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
 import net.storm.sdk.movement.Movement;
 
@@ -146,34 +149,65 @@ public class Banking implements StateMachineInterface {
         sharedContext.essenceInBank();
     }
 
+    private void depositRunes(AIORCConfig config, SharedContext sharedContext) {
+        int runeId = sharedContext.getCurrentlyCrafting().getItemID();
+        if (Bank.Inventory.contains(runeId) && config.bankCraftedRunes()) {
+           Bank.depositAll(runeId);
+        }
+    }
+
+    private void withdrawAndEquipDuelingRing(SharedContext sharedContext) {
+        if (sharedContext.isUsingDuelingRings() && !sharedContext.checkForDuelingRing()) {
+            Bank.withdraw(ItemID.RING_OF_DUELING8, 1);
+
+            if(Equipment.fromSlot(EquipmentSlot.RING) == null &&
+                    Bank.Inventory.contains(ItemID.RING_OF_DUELING8)) {
+                Bank.Inventory.getFirst(ItemID.RING_OF_DUELING8).interact("Wear");
+            }
+        }
+    }
+
+    private void withdrawAndEquipGlory(SharedContext sharedContext) {
+        if (sharedContext.isUsingGlories() && !Bank.Inventory.contains(ItemID.AMULET_OF_GLORY) &&
+                !Equipment.contains(ItemID.AMULET_OF_GLORY)) {
+            Bank.withdraw(ItemID.AMULET_OF_GLORY6, 1);
+
+            if(Equipment.fromSlot(EquipmentSlot.AMULET) == null &&
+                    Bank.Inventory.contains(ItemID.AMULET_OF_GLORY6)) {
+                Bank.Inventory.getFirst(ItemID.AMULET_OF_GLORY6).interact("Wear");
+            }
+        }
+
+        if (Bank.Inventory.contains(ItemID.AMULET_OF_GLORY)) {
+            Bank.deposit(ItemID.AMULET_OF_GLORY, 1);
+        }
+    }
+
     @Override
     public void handleState(StateMachine stateMachine, States state) {
         SharedContext context = stateMachine.getContext();
         AIORCConfig config = stateMachine.getContext().getConfig();
 
-        if (state == States.Banking) {
-            if (!Bank.isOpen()) {
-                System.out.println("WALK TO BANK PLS...");
-                OpenBank(config.bank());
-            }
+        if (!Bank.isOpen()) {
+            OpenBank(config.bank());
+        }
 
-            if (Bank.isOpen()) {
-                bankForTalisman(context);
-                bankForBindingNecklace(context);
-                withdrawAndDrinkStamina(context);
+        if (Bank.isOpen()) {
+            depositRunes(config, context);
+            withdrawAndEquipDuelingRing(context);
+            withdrawAndEquipGlory(context);
+            bankForTalisman(context);
+            bankForBindingNecklace(context);
+            withdrawAndDrinkStamina(context);
 
-                if(context.maxEssenceCapacity() >= context.getTotalEssencesInInv()) {
-                    bankForEssence(context);
-                }
+            if(context.maxEssenceCapacity() >= context.getTotalEssencesInInv()) {
+                bankForEssence(context);
             }
+        }
 
-            // Bank.Inventory.getCount(ItemID.PURE_ESSENCE) > 20
-            if(context.maxEssenceCapacity() == context.getTotalEssencesInInv()) {
-                Bank.close();
-                stateMachine.setState(new RepairPouch(), false);
-            }
-        } else {
-            System.out.println("Invalid event in PAUSED state.");
+        if(context.maxEssenceCapacity() == context.getTotalEssencesInInv()) {
+            Bank.close();
+            stateMachine.setState(new RepairPouch(), false);
         }
     }
 
