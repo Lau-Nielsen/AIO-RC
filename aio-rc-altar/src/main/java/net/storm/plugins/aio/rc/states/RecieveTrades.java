@@ -1,8 +1,6 @@
 package net.storm.plugins.aio.rc.states;
 
 import net.runelite.api.ItemID;
-import net.runelite.api.events.ChatMessage;
-import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.events.PlayerDespawned;
@@ -19,7 +17,6 @@ import net.storm.sdk.items.Trade;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class RecieveTrades implements StateMachineInterface {
     private final SharedContext context;

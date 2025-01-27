@@ -511,15 +511,19 @@ public interface AIORCConfig extends Config {
         return 0;
     }
 
+    @Range(
+            max = 28
+    )
     @ConfigItem(
-            keyName = "incompleteTrades",
-            name = "Do incomplete trades?",
-            position = 2,
-            description = "Trade even if you don't have the specified number of items available?",
+            keyName = "minTradeVolume",
+            name = "min items",
+            position = 1,
+            description = "Minimum amount of items per trade.",
             section = tradingConfig
     )
-    default boolean incompleteTrades() {
-        return false;
+    default int minTradeVolume()
+    {
+        return 10;
     }
 
     @Units(

@@ -1,6 +1,5 @@
 package net.storm.plugins.aio.rc.states;
 
-import com.google.inject.Inject;
 import net.runelite.api.ItemID;
 import net.runelite.api.Quest;
 import net.runelite.api.Skill;
@@ -15,7 +14,6 @@ import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.plugins.aio.rc.enums.Altar;
-import net.storm.plugins.aio.rc.enums.Banks;
 import net.storm.sdk.game.Skills;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
@@ -109,7 +107,7 @@ public class Setup implements StateMachineInterface {
     }
 
     private void imbueCheck() {
-        if(config.useImbue()) {
+        if(config.useImbue() && !config.isRunner()) {
             if(!SpellBook.Lunar.MAGIC_IMBUE.haveRunesAvailable()) {
                 MessageUtils.addMessage("You're either missing runes to cast Imbue add them to the loadout.", Color.red);
                 forceAddressErrors = true;
@@ -143,6 +141,10 @@ public class Setup implements StateMachineInterface {
 
     private void npcContactCheck() {
         boolean rcCapePerk = hasRcCapePerk();
+
+        if(config.isRunner()) {
+            return;
+        }
 
         if(!rcCapePerk && !config.useAbyss() && !config.repairOnDarkMage()) {
             if(!SpellBook.Lunar.NPC_CONTACT.haveRunesAvailable()) {
@@ -248,7 +250,7 @@ public class Setup implements StateMachineInterface {
     }
 
     private void comboRuneCheck() {
-        if (context.getRuneNeededForComboRunesId() != null) {
+        if (context.getRuneNeededForComboRunesId() != null && !config.isRunner()) {
            if (!Inventory.contains(context.getRuneNeededForComboRunesId())) {
                MessageUtils.addMessage("You're missing the required rune for this comboRune!", Color.red);
                forceAddressErrors = true;

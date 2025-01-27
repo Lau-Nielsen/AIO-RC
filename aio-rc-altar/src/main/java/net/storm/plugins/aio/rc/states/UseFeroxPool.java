@@ -1,6 +1,5 @@
 package net.storm.plugins.aio.rc.states;
 
-import com.google.inject.Inject;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.tiles.ITileObject;

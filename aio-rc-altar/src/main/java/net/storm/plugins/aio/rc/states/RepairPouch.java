@@ -1,6 +1,5 @@
 package net.storm.plugins.aio.rc.states;
 
-import com.google.inject.Inject;
 import lombok.Setter;
 import net.storm.api.magic.SpellBook;
 import net.storm.api.widgets.InterfaceAddress;

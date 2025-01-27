@@ -49,6 +49,7 @@ public class SharedContext {
     private Runes currentlyCrafting; // done
     private List<String> tradeOrder; // done
     private String currentState; // done;
+    private RunningState currentRunningState = RunningState.AWAITING_START; // done;
 
     private long startTime;
     private long totalElapsedTime = 0;
@@ -76,22 +77,22 @@ public class SharedContext {
 
     public long getElapsedMilliseconds() {
         if (isTimeTracking) {
-            return (totalElapsedTime + (System.currentTimeMillis() - startTime));
+            return (totalElapsedTime + (System.currentTimeMillis() - startTime)) / 100;
         } else {
-            return totalElapsedTime;
+            return totalElapsedTime / 100;
         }
     }
 
     public String formatTime() {
         long totalTime = this.getElapsedMilliseconds();
 
-        long hours = totalTime / 3600000;                // Calculate hours
-        long minutes = (totalTime % 3600000) / 60000;    // Calculate minutes
-        long seconds = (totalTime % 60000) / 1000;       // Calculate seconds
-        long milliseconds = totalTime % 1000;           // Calculate remaining milliseconds
+        long hours = totalTime / 36000;                // Calculate hours
+        long minutes = (totalTime % 36000) / 600;    // Calculate minutes
+        long seconds = (totalTime % 600) / 10;       // Calculate seconds
+        long milliseconds = totalTime % 10;           // Calculate remaining milliseconds
 
         // Format as HH:MM:SS.mmm with leading zeros
-        return String.format("%02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
+        return String.format("%02d:%02d:%02d.%01d", hours, minutes, seconds, milliseconds);
     }
 
     public boolean checkForDuelingRing() {
@@ -304,7 +305,7 @@ public class SharedContext {
     }
 
     public String calculateRatePerHour(long amount) {
-        double elapsedTimeHours = totalElapsedTime / 3600000.0;
+        double elapsedTimeHours = getElapsedMilliseconds() / 36000.0;
 
         if (elapsedTimeHours == 0) {
             return "0";
@@ -315,6 +316,11 @@ public class SharedContext {
         DecimalFormat df = new DecimalFormat("#.00");
 
         return df.format(rate);
+    }
+
+    public boolean checkForBrokenPouch() {
+        return Inventory.contains(EssPouch.GIANT.getBrokenItemID(), EssPouch.LARGE.getBrokenItemID(),
+                EssPouch.MEDIUM.getBrokenItemID(), EssPouch.COLOSSAL.getBrokenItemID());
     }
 
     public void checkStaminaDoses() {

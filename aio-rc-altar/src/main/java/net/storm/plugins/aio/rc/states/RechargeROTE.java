@@ -1,25 +1,18 @@
 package net.storm.plugins.aio.rc.states;
 
-import com.google.inject.Inject;
-import lombok.Setter;
 import net.runelite.api.ItemID;
 import net.storm.api.domain.items.IItem;
-import net.storm.api.magic.SpellBook;
 import net.storm.api.widgets.EquipmentSlot;
-import net.storm.api.widgets.InterfaceAddress;
 import net.storm.plugins.aio.rc.AIORCConfig;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
 import net.storm.plugins.aio.rc.enums.States;
-import net.storm.plugins.aio.rc.enums.Banks;
 import net.storm.sdk.game.Vars;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
-import net.storm.sdk.magic.Magic;
 import net.storm.sdk.widgets.Dialog;
-import net.storm.sdk.widgets.Widgets;
 
 public class RechargeROTE implements StateMachineInterface {
     private final SharedContext context;

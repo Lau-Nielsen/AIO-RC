@@ -1,13 +1,10 @@
 package net.storm.plugins.aio.rc.states;
 
-import com.google.inject.Inject;
 import net.runelite.api.ItemID;
 import net.runelite.api.Skill;
 import net.runelite.api.Varbits;
-import net.runelite.api.vars.InputType;
 import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.Static;
-import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.api.events.*;
 import net.storm.api.magic.SpellBook;
@@ -20,6 +17,7 @@ import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.Vars;
+import net.storm.sdk.input.Keyboard;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
 import net.storm.sdk.movement.Movement;
@@ -123,7 +121,7 @@ public class CraftRunes implements StateMachineInterface {
     public void handleState(StateMachine stateMachine, States state) {
         ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 2, context.getConfig().runes().getAltarID());
 
-        if(Inventory.contains(ItemID.BINDING_NECKLACE)) {
+        if(Inventory.contains(ItemID.BINDING_NECKLACE) && !Dialog.isOpen()) {
             if(!Equipment.contains(ItemID.BINDING_NECKLACE)) {
                 Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Wear");
             } else if (!Dialog.isOpen()) {
@@ -156,12 +154,8 @@ public class CraftRunes implements StateMachineInterface {
             }
         }
 
-        for (var i : Dialog.getOptions()) {
-            System.out.println(i.getName());
-        }
-
         if (Dialog.isOpen()) {
-            Dialog.chooseOption(0);
+            Keyboard.type(1);
         }
 
     }

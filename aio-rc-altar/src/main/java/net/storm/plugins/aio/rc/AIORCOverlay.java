@@ -25,7 +25,7 @@ class AIORCOverlay extends OverlayPanel
     public Dimension render(Graphics2D graphics)
     {
         if (context != null) {;
-            if (context.isTimeTracking()) {
+            if (context.getCurrentRunningState() == RunningState.RUNNING) {
                 panelComponent.getChildren().add(TitleComponent.builder()
                         .text("AIO RC RUNNING")
                         .color(Color.GREEN).preferredSize(new Dimension(300,200))
@@ -62,7 +62,7 @@ class AIORCOverlay extends OverlayPanel
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("State:")
-                        .right(config.runes().name())
+                        .right(context.getCurrentState())
                         .build());
             }
 

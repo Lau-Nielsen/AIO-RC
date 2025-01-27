@@ -8,13 +8,13 @@ import net.storm.plugins.aio.rc.AIORCConfig;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
+import net.storm.plugins.aio.rc.enums.RunningState;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
-import net.storm.sdk.items.loadouts.LoadoutFactory;
 import net.storm.sdk.movement.Movement;
 
 
@@ -205,8 +205,20 @@ public class Banking implements StateMachineInterface {
         }
 
         if(context.maxEssenceCapacity() == context.getTotalEssencesInInv()) {
+            if(context.getEssenceInBank() == 0) {
+                context.setCurrentRunningState(RunningState.STOPPED);
+            } else if (config.useStamina() && context.getStaminaDoses() == 0) {
+                context.setCurrentRunningState(RunningState.STOPPED);
+            }
+
             Bank.close();
-            stateMachine.setState(new RepairPouch(context), false);
+            if(context.checkForBrokenPouch()) {
+                stateMachine.setState(new RepairPouch(context), false);
+            } else if (config.usePoolAtFerox()) {
+                stateMachine.setState(new UseFeroxPool(context), true);
+            } else {
+                stateMachine.setState(new WalkToAltar(context), true);
+            }
         }
     }
 

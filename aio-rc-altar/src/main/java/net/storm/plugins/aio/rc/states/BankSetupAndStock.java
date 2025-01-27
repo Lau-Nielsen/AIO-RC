@@ -1,10 +1,8 @@
 package net.storm.plugins.aio.rc.states;
 
-import com.google.inject.Inject;
 import net.runelite.api.ItemID;
 import net.runelite.client.game.ItemVariationMapping;
 import net.storm.api.items.loadouts.LoadoutItem;
-import net.storm.plugins.aio.rc.AIORCConfig;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;

@@ -15,9 +15,7 @@ import net.storm.api.plugins.config.ConfigManager;
 import net.storm.plugins.aio.rc.enums.RunningState;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.plugins.aio.rc.states.BankSetupAndStock;
-import net.storm.plugins.aio.rc.states.RechargeROTE;
 import net.storm.plugins.aio.rc.states.Setup;
-import net.storm.sdk.game.Client;
 import net.storm.sdk.game.GameThread;
 import net.storm.sdk.items.loadouts.LoadoutFactory;
 import net.storm.sdk.plugins.LoopedPlugin;
@@ -52,10 +50,6 @@ public class AIORC extends LoopedPlugin {
 
     @Getter
     @Setter
-    private RunningState runningState = RunningState.AWAITING_START;
-
-    @Getter
-    @Setter
     private StateMachine stateMachine;
 
     private AtomicInteger ticks = new AtomicInteger(0);
@@ -63,11 +57,11 @@ public class AIORC extends LoopedPlugin {
     @Subscribe
     public void onConfigButtonClicked(ConfigButtonClicked buttonClicked) {
         if (buttonClicked.getKey().equals("startPlugin")) {
-            if (RunningState.RUNNING.equals(this.runningState)) {
+            if (RunningState.RUNNING.equals(context.getCurrentRunningState())) {
                 context.pause();
-                setRunningState(RunningState.STOPPED);
+                context.setCurrentRunningState(RunningState.STOPPED);
             } else {
-                setRunningState(RunningState.RUNNING);
+                context.setCurrentRunningState(RunningState.RUNNING);
                 context.start();
                 if(stateMachine != null && stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
                     stateMachine.setState(new Setup(context), false);
@@ -76,7 +70,7 @@ public class AIORC extends LoopedPlugin {
         }
 
         if(buttonClicked.getKey().equals("pausePlugin")) {
-            setRunningState(RunningState.PAUSED);
+            context.setCurrentRunningState(RunningState.PAUSED);
         }
 
         if(buttonClicked.getKey().equals("importLoadout")) {
@@ -107,16 +101,15 @@ public class AIORC extends LoopedPlugin {
             this.stateMachine.setState(new BankSetupAndStock(context), true);
             context.checkCurrentRuneBeingCrafted();
             System.out.println(context.getCurrentlyCrafting());
-            System.out.println("Initializing Example Looped Plugin");
+            System.out.println("Initializing AIO RC Plugin");
         }
 
         if(stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
-            setRunningState(RunningState.STOPPED);
+            context.setCurrentRunningState(RunningState.STOPPED);
         }
 
 
-        if (runningState == RunningState.RUNNING) {
-            System.out.println("Running handleState for: " + this.stateMachine.getCurrentStateName());
+        if (context.getCurrentRunningState() == RunningState.RUNNING) {
             this.stateMachine.handleState(this.stateMachine.getCurrentStateName());
             context.setCurrentState(stateMachine.getCurrentStateName().name());
         }
