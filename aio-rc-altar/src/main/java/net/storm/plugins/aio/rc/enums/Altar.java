@@ -2,6 +2,7 @@ package net.storm.plugins.aio.rc.enums;
 
 import lombok.Getter;
 import net.runelite.api.ItemID;
+import net.runelite.api.NullObjectID;
 import net.runelite.api.ObjectID;
 import net.runelite.api.coords.WorldArea;
 import net.storm.sdk.movement.Movement;
@@ -25,7 +26,7 @@ public enum Altar {
     NATURE(34821, 34768, new WorldArea(2869,3016,10,10,0),ObjectID.NATURE_RIFT, Arrays.asList(ItemID.CATALYTIC_TIARA, ItemID.CATALYTIC_TALISMAN, ItemID.NATURE_TIARA, ItemID.NATURE_TALISMAN), Runes.NATURE),
     LAW(34820, 34764, new WorldArea(2858,3378,10,10,0), ObjectID.LAW_RIFT, Arrays.asList(ItemID.CATALYTIC_TIARA, ItemID.CATALYTIC_TALISMAN, ItemID.LAW_TIARA, ItemID.LAW_TALISMAN), Runes.LAW),
     DEATH(null, 34770, new WorldArea(0,0,0,0,0), ObjectID.DEATH_RIFT, Arrays.asList(ItemID.CATALYTIC_TIARA, ItemID.CATALYTIC_TALISMAN, ItemID.DEATH_TIARA, ItemID.DEATH_TALISMAN), Runes.DEATH),
-BLOOD(25380, 43479, new WorldArea(3558,9778,10,10,0), ObjectID.BLOOD_RIFT, Arrays.asList(ItemID.CATALYTIC_TIARA, ItemID.CATALYTIC_TALISMAN, ItemID.BLOOD_TIARA, ItemID.BLOOD_TALISMAN), Runes.BLOOD),
+BLOOD(25380, 43479, new WorldArea(3558,9778,10,10,0), NullObjectID.NULL_43848, Arrays.asList(ItemID.CATALYTIC_TIARA, ItemID.CATALYTIC_TALISMAN, ItemID.BLOOD_TIARA, ItemID.BLOOD_TALISMAN), Runes.BLOOD),
     WRATH(34824, 34772, new WorldArea(2448,2823,10,10,0), null, Arrays.asList(ItemID.CATALYTIC_TIARA, ItemID.CATALYTIC_TALISMAN, ItemID.WRATH_TIARA, ItemID.WRATH_TIARA), Runes.WRATH),;
 
     @Getter
