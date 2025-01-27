@@ -6,8 +6,6 @@ public enum States {
     UseFeroxPool,
     RechargeRingOfElements,
     Setup,
-    EnterAbyss,
-    SolveAbyss,
     WalkToAltar,
     Trade,
     BankSetupAndStock,

@@ -100,7 +100,9 @@ public class RunnerTradePlayer implements StateMachineInterface {
         IPlayer localPlayer = Players.getLocal();
         context.checkTotalEssencesInInv();
 
-        emptyPouches();
+        if(!Trade.isOpen() && Inventory.getFreeSlots() > 0) {
+            emptyPouches();
+        }
 
         if (player != null && (tickSinceTrade.get() % tradeEveryXTicks) == 0 && !Trade.isOpen() &&
                 !localPlayer.isInteracting() && context.getTotalEssencesInInv() > config.minTradeVolume()) {

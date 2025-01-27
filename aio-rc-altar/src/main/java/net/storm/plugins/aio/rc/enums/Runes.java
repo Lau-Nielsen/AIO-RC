@@ -26,7 +26,8 @@ public enum Runes {
     MUD(ItemID.MUD_RUNE),
     SMOKE(ItemID.SMOKE_RUNE),
     STEAM(ItemID.STEAM_RUNE),
-    LAVA(ItemID.LAVA_RUNE);
+    LAVA(ItemID.LAVA_RUNE),
+    DEATH(ItemID.DEATH_RUNE);
 
     @Getter
     private int itemID;

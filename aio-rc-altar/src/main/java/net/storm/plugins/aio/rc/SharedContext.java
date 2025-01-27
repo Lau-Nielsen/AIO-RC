@@ -293,16 +293,18 @@ public class SharedContext {
 
     public void checkCurrentRuneBeingCrafted() {
         if (this.config.runes().name().equals("AIR")) {
-            currentlyCrafting = this.config.airCombo().getRune();
+            this.currentlyCrafting = this.config.airCombo().getRune();
         } else if (this.config.runes().name().equals("EARTH")) {
-            currentlyCrafting = this.config.earthCombo().getRune();
+            this.currentlyCrafting = this.config.earthCombo().getRune();
         } else if (this.config.runes().name().equals("FIRE")) {
-            currentlyCrafting = this.config.fireCombo().getRune();
+            this.currentlyCrafting = this.config.fireCombo().getRune();
         } else if (this.config.runes().name().equals("WATER")) {
-            currentlyCrafting = this.config.waterCombo().getRune();
+            this.currentlyCrafting = this.config.waterCombo().getRune();
         } else {
-            currentlyCrafting = this.config.runes().getRune();
+            this.currentlyCrafting = this.config.runes().getRune();
         }
+
+        System.out.println(this.currentlyCrafting +" "+ this.config.runes());
     }
 
     public String calculateRatePerHour(long amount) {
