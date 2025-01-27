@@ -13,6 +13,7 @@ import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,7 +48,7 @@ public class SharedContext {
     private boolean isUsingColossalPouch; // done
     private boolean isHatOfTheEyeCatalytic; // done
     private Runes currentlyCrafting; // done
-    private List<String> tradeOrder; // done
+    private List<String> tradeOrder = new ArrayList<>(); // done
     private String currentState; // done;
     private RunningState currentRunningState = RunningState.AWAITING_START; // done;
 

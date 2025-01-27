@@ -79,7 +79,7 @@ public class CraftRunes implements StateMachineInterface {
         return Inventory.getFreeSlots() > amount;
     }
 
-    private void emptyPouches(SharedContext context) {
+    private void emptyPouches() {
         EssPouch small = EssPouch.SMALL;
         EssPouch medium = EssPouch.MEDIUM;
         EssPouch large = EssPouch.LARGE;
@@ -139,7 +139,7 @@ public class CraftRunes implements StateMachineInterface {
 
             context.checkTotalEssencesInInv();
             if (altar != null && context.getTotalEssencesInInv() > 0) {
-                emptyPouches(context);
+                emptyPouches();
                 craftRunes(context);
             }
 

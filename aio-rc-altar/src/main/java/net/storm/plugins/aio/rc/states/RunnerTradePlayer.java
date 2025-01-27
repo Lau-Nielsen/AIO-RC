@@ -10,6 +10,7 @@ import net.storm.plugins.aio.rc.AIORCConfig;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
+import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.input.Keyboard;
@@ -59,13 +60,50 @@ public class RunnerTradePlayer implements StateMachineInterface {
         return Math.min(Inventory.getCount(ItemID.PURE_ESSENCE), maxPureEssenceAmount);
     }
 
+    private boolean hasSpace(int amount) {
+        return Inventory.getFreeSlots() > amount;
+    }
+
+    private void emptyPouches() {
+        EssPouch small = EssPouch.SMALL;
+        EssPouch medium = EssPouch.MEDIUM;
+        EssPouch large = EssPouch.LARGE;
+        EssPouch giant = EssPouch.GIANT;
+        EssPouch colossal = EssPouch.COLOSSAL;
+
+        if(context.isUsingSmallPouch() && small.getAmount() > 0 && hasSpace(small.getAmount())) {
+            small.empty();
+        }
+
+        if (context.isUsingGiantPouch() && giant.getAmount() > 0 && hasSpace(giant.getAmount())) {
+            giant.empty();
+        }
+
+        if (context.isUsingMediumPouch() && medium.getAmount() > 0 && hasSpace(medium.getAmount())) {
+            medium.empty();
+        }
+
+        if (context.isUsingLargePouch() && large.getAmount() > 0 && hasSpace(large.getAmount())) {
+            large.empty();
+        }
+
+        if (context.isUsingColossalPouch() && colossal.getAmount() > 0) {
+            colossal.empty();
+        }
+    }
+
     @Override
     public void handleState(StateMachine stateMachine, States state) {
         String runecrafterName = config.runecrafterName();
         int tradeEveryXTicks = config.resendTradeEvery();
         IPlayer player = Players.getNearest(runecrafterName);
+        IPlayer localPlayer = Players.getLocal();
+        context.checkTotalEssencesInInv();
 
-        if (player != null && (tickSinceTrade.get() % tradeEveryXTicks) == 0 && !Trade.isOpen()) {
+        emptyPouches();
+
+        if (player != null && (tickSinceTrade.get() % tradeEveryXTicks) == 0 && !Trade.isOpen() &&
+                !localPlayer.isInteracting() && context.getTotalEssencesInInv() > config.minTradeVolume()) {
             player.interact("Trade with");
         }
 
@@ -88,7 +126,7 @@ public class RunnerTradePlayer implements StateMachineInterface {
         }
 
         context.checkTotalEssencesInInv();
-        if (context.getTotalEssencesInInv() == 0) {
+        if (context.getTotalEssencesInInv() < config.minTradeVolume() && !Trade.isOpen()) {
             context.checkChargesOnRote();
             stateMachine.setState(new RechargeROTE(context), false);
         }

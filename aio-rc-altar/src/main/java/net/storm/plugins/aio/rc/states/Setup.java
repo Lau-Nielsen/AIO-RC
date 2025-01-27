@@ -142,7 +142,7 @@ public class Setup implements StateMachineInterface {
     private void npcContactCheck() {
         boolean rcCapePerk = hasRcCapePerk();
 
-        if(config.isRunner()) {
+        if(config.isRunner() || config.isUsingRunners()) {
             return;
         }
 

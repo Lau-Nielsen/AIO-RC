@@ -150,8 +150,6 @@ public class BankSetupAndStock implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine, States state) {
-        System.out.println("CONFIG BEFORE NPE: " + context);
-        System.out.println("CONFIG: " + context.getCurrentlyCrafting());
         if(!Bank.isOpen() && !checkedForLoadoutIds) {
             Bank.open(context.getConfig().bank().getBankLocation());
         }
