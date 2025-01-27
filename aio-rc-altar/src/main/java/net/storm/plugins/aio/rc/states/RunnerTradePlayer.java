@@ -4,7 +4,11 @@ import net.runelite.api.ItemID;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.Subscribe;
+import net.storm.api.Static;
 import net.storm.api.domain.actors.IPlayer;
+import net.storm.api.events.InventoryChanged;
+import net.storm.plugins.aio.rc.AIORCConfig;
+import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
 import net.storm.plugins.aio.rc.enums.States;
@@ -14,7 +18,15 @@ import net.storm.sdk.items.Trade;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class TradePlayer implements StateMachineInterface {
+public class RunnerTradePlayer implements StateMachineInterface {
+    private final SharedContext context;
+    private final AIORCConfig config;
+
+    public RunnerTradePlayer(final SharedContext context) {
+        this.context = context;
+        this.config = context.getConfig();
+    }
+
     private boolean countFlag = false;
     private AtomicInteger tickSinceTrade = new AtomicInteger(0);
 
@@ -32,8 +44,15 @@ public class TradePlayer implements StateMachineInterface {
         }
     }
 
-    private int validatePureEssenceAmount(StateMachine stateMachine, boolean containsBindingNecklace) {
-        int maxItemsToTrade =  stateMachine.getContext().getConfig().maxTradeVolume();
+    @Subscribe
+    private void onInventoryChanged(InventoryChanged invChange) {
+        if(invChange.getItemId() == ItemID.PURE_ESSENCE) {
+            context.setEssencesTraded(context.getEssencesTraded() + invChange.getAmount());
+        }
+    }
+
+    private int validatePureEssenceAmount(boolean containsBindingNecklace) {
+        int maxItemsToTrade =  config.maxTradeVolume();
         int maxPureEssenceAmount = containsBindingNecklace ? maxItemsToTrade -1 : maxItemsToTrade;
 
         return Math.min(Inventory.getCount(ItemID.PURE_ESSENCE), maxPureEssenceAmount);
@@ -41,8 +60,8 @@ public class TradePlayer implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine, States state) {
-        String runecrafterName = stateMachine.getContext().getConfig().runecrafterName();
-        int tradeEveryXTicks = stateMachine.getContext().getConfig().resendTradeEvery();
+        String runecrafterName = config.runecrafterName();
+        int tradeEveryXTicks = config.resendTradeEvery();
         IPlayer player = Players.getNearest(runecrafterName);
 
         if (player != null && (tickSinceTrade.get() % tradeEveryXTicks) == 0 && !Trade.isOpen()) {
@@ -63,8 +82,14 @@ public class TradePlayer implements StateMachineInterface {
                 if(containsBindingNecklace) {
                     Trade.offer(ItemID.BINDING_NECKLACE, 1);
                 }
-                Trade.offer(ItemID.PURE_ESSENCE, validatePureEssenceAmount(stateMachine, containsBindingNecklace));
+                Trade.offer(ItemID.PURE_ESSENCE, validatePureEssenceAmount(containsBindingNecklace));
             }
+        }
+
+        context.checkTotalEssencesInInv();
+        if (context.getTotalEssencesInInv() == 0) {
+            context.checkChargesOnRote();
+            stateMachine.setState(new RechargeROTE(context), false);
         }
 
     }

@@ -1,6 +1,7 @@
 package net.storm.plugins.aio.rc;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.ItemID;
@@ -11,19 +12,23 @@ import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
 
+import java.text.DecimalFormat;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Setter
 @Getter
+@Singleton
 public class SharedContext {
     private Integer chargesOnRingOfElement = 0; // done
-    private Integer tripsCompleted = 0; // done
+    private AtomicInteger tripsCompleted = new AtomicInteger(0); // done
     private Integer staminaDoses = 0; // done
     private Integer essenceInBank = 0; // done
     private Integer bindingNecklacesInBank = 0; // done
     private Integer essencesTraded = 0;
-    private Integer runesCrafted = 0;
-    private Integer expGained = 0;
+    private Integer runesCrafted = 0; // done
+    private Integer expGained = 0; // done
     private double  estimatedGpEarned = 0;
     private Integer totalEssencesInInv = 0; // done
     private Integer duelingRingsInBank = 0; // done
@@ -42,16 +47,18 @@ public class SharedContext {
     private boolean isUsingColossalPouch; // done
     private boolean isHatOfTheEyeCatalytic; // done
     private Runes currentlyCrafting; // done
+    private List<String> tradeOrder; // done
+    private String currentState; // done;
 
     private long startTime;
     private long totalElapsedTime = 0;
     private boolean isTimeTracking = false;
 
 
+    @Getter
     private AIORCConfig config;
 
-    @Inject
-    public SharedContext (){};
+    public SharedContext (AIORCConfig config){ this.config = config;}
 
     public void start() {
         if (!isTimeTracking) {
@@ -294,6 +301,20 @@ public class SharedContext {
         } else {
             currentlyCrafting = this.config.runes().getRune();
         }
+    }
+
+    public String calculateRatePerHour(long amount) {
+        double elapsedTimeHours = totalElapsedTime / 3600000.0;
+
+        if (elapsedTimeHours == 0) {
+            return "0";
+        }
+
+        double rate = amount / elapsedTimeHours;
+
+        DecimalFormat df = new DecimalFormat("#.00");
+
+        return df.format(rate);
     }
 
     public void checkStaminaDoses() {

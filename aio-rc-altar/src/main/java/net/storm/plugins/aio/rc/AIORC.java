@@ -15,9 +15,11 @@ import net.storm.api.plugins.config.ConfigManager;
 import net.storm.plugins.aio.rc.enums.RunningState;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.plugins.aio.rc.states.BankSetupAndStock;
+import net.storm.plugins.aio.rc.states.RechargeROTE;
 import net.storm.plugins.aio.rc.states.Setup;
+import net.storm.sdk.game.Client;
 import net.storm.sdk.game.GameThread;
-import net.storm.sdk.items.loadouts.LoadoutHelper;
+import net.storm.sdk.items.loadouts.LoadoutFactory;
 import net.storm.sdk.plugins.LoopedPlugin;
 import org.pf4j.Extension;
 
@@ -35,18 +37,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Extension
 public class AIORC extends LoopedPlugin {
     private ConfigManager conManager;
+    private SharedContext context;
+    private AIORCOverlay overlay;
+
+    @Inject
+    public EventBus eventBus;
 
     @Inject
     private AIORCConfig config;
 
     @Inject
-    private SharedContext context;
-
-    @Inject
     private OverlayManager overlayManager;
 
-    @Inject
-    private AIORCOverlay overlay;
 
     @Getter
     @Setter
@@ -62,13 +64,13 @@ public class AIORC extends LoopedPlugin {
     public void onConfigButtonClicked(ConfigButtonClicked buttonClicked) {
         if (buttonClicked.getKey().equals("startPlugin")) {
             if (RunningState.RUNNING.equals(this.runningState)) {
-                stateMachine.getContext().pause();
+                context.pause();
                 setRunningState(RunningState.STOPPED);
             } else {
                 setRunningState(RunningState.RUNNING);
-                stateMachine.getContext().start();
+                context.start();
                 if(stateMachine != null && stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
-                    stateMachine.setState(new Setup(), false);
+                    stateMachine.setState(new Setup(context), false);
                 }
             }
         }
@@ -78,19 +80,20 @@ public class AIORC extends LoopedPlugin {
         }
 
         if(buttonClicked.getKey().equals("importLoadout")) {
-            GameThread.invokeAndWait(() -> conManager.setConfiguration("AIO RC", "loadout", LoadoutHelper.fromCurrentSetup().build()));
+            GameThread.invokeAndWait(() -> conManager.setConfiguration("AIO RC", "loadout", LoadoutFactory.fromCurrentEquipment().build()));
         }
     }
 
     @Subscribe
     public void onConfigChanged(ConfigChanged event) {
-        if (stateMachine != null && stateMachine.getContext() != null) {
-            stateMachine.getContext().setConfig(conManager.getConfig(AIORCConfig.class));
+        if (stateMachine != null && context != null) {
+            context.setConfig(conManager.getConfig(AIORCConfig.class));
+            context.checkCurrentRuneBeingCrafted();
 
             if(event.getKey().equals("runes") || event.getKey().equals("loadout") ||
                     event.getKey().equals("airCombo") || event.getKey().equals("earthCombo") || event.getKey().equals("fireCombo") ||
                     event.getKey().equals("waterCombo")) {
-                stateMachine.setState(new BankSetupAndStock(), true);
+                stateMachine.setState(new BankSetupAndStock(context), true);
             }
         }
     }
@@ -100,10 +103,10 @@ public class AIORC extends LoopedPlugin {
         this.ticks.incrementAndGet();
 
         if (isRunning() && this.stateMachine == null) {
-            setStateMachine(new StateMachine(context, eventBus));
-            this.stateMachine.setState(new BankSetupAndStock(), true);
-            this.stateMachine.getContext().checkCurrentRuneBeingCrafted();
-            System.out.println(this.stateMachine.getContext().getCurrentlyCrafting());
+            setStateMachine(new StateMachine(eventBus, context));
+            this.stateMachine.setState(new BankSetupAndStock(context), true);
+            context.checkCurrentRuneBeingCrafted();
+            System.out.println(context.getCurrentlyCrafting());
             System.out.println("Initializing Example Looped Plugin");
         }
 
@@ -115,6 +118,7 @@ public class AIORC extends LoopedPlugin {
         if (runningState == RunningState.RUNNING) {
             System.out.println("Running handleState for: " + this.stateMachine.getCurrentStateName());
             this.stateMachine.handleState(this.stateMachine.getCurrentStateName());
+            context.setCurrentState(stateMachine.getCurrentStateName().name());
         }
 
     }
@@ -122,6 +126,8 @@ public class AIORC extends LoopedPlugin {
     @Override
     public void startUp() throws Exception
     {
+        this.context = new SharedContext(config);
+        this.overlay = new AIORCOverlay(context);
         overlayManager.add(overlay);
     }
 
@@ -135,10 +141,6 @@ public class AIORC extends LoopedPlugin {
     protected int loop() {
         return 1000; // Sleep for 1000 milliseconds
     }
-
-
-    @Inject
-    public EventBus eventBus;
 
     @Provides
     AIORCConfig provideConfig(ConfigManager configManager) {

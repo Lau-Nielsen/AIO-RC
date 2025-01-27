@@ -5,6 +5,7 @@ import net.storm.api.items.loadouts.Loadout;
 import net.storm.api.plugins.SoxExclude;
 import net.storm.api.plugins.config.*;
 import net.storm.plugins.aio.rc.enums.*;
+import net.storm.sdk.items.loadouts.LoadoutFactory;
 
 @ConfigGroup(AIORCConfig.GROUP)
 @SoxExclude // Exclude from obfuscation
@@ -68,7 +69,7 @@ public interface AIORCConfig extends Config {
             section = loadoutSection
     )
     default Loadout loadout() {
-        return Loadout.builder().build();
+        return LoadoutFactory.newBuilder().build();
     }
 
     @ConfigItem(

@@ -3,9 +3,8 @@ package net.storm.plugins.aio.rc;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import javax.inject.Inject;
-import net.runelite.api.Client;
-import net.runelite.api.Skill;
+
+import com.google.inject.Inject;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
@@ -13,31 +12,25 @@ import net.storm.plugins.aio.rc.enums.RunningState;
 
 class AIORCOverlay extends OverlayPanel
 {
-    private final Client client;
-    private final AIORC plugin;
+    private final SharedContext context;
     private final AIORCConfig config;
 
-    @Inject
-    public AIORCOverlay(Client client, AIORC plugin, AIORCConfig config)
+    public AIORCOverlay(SharedContext context)
     {
-        this.client = client;
-        this.plugin = plugin;
-        this.config = config;
+        this.context = context;
+        this.config = context.getConfig();
     }
 
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        if (plugin.getStateMachine() != null) {
-            SharedContext context = plugin.getStateMachine().getContext();
-            if (plugin.getRunningState() == RunningState.RUNNING)
-            {
+        if (context != null) {;
+            if (context.isTimeTracking()) {
                 panelComponent.getChildren().add(TitleComponent.builder()
                         .text("AIO RC RUNNING")
                         .color(Color.GREEN).preferredSize(new Dimension(300,200))
                         .build());
-            }
-            else
+            } else
             {
                 panelComponent.getChildren().add(TitleComponent.builder()
                         .text("AIO RC PAUSED")
@@ -66,6 +59,13 @@ class AIORCOverlay extends OverlayPanel
                             .build());
                 }
             }
+            {
+                panelComponent.getChildren().add(LineComponent.builder()
+                        .left("State:")
+                        .right(config.runes().name())
+                        .build());
+            }
+
 
             {
                 panelComponent.getChildren().add(LineComponent.builder().build());
@@ -132,6 +132,43 @@ class AIORCOverlay extends OverlayPanel
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("RotE charges:")
                             .right(context.getChargesOnRingOfElement().toString())
+                            .build());
+                }
+            }
+
+            {
+                panelComponent.getChildren().add(LineComponent.builder().build());
+            }
+
+            {
+                panelComponent.getChildren().add(LineComponent.builder()
+                        .left("Metrics:")
+                        .build());
+            }
+            if (config.isRunner()) {
+                {
+                    panelComponent.getChildren().add(LineComponent.builder()
+                            .left("Essence traded:")
+                            .right(context.getEssencesTraded().toString() +  " | " + context.calculateRatePerHour(context.getEssencesTraded()) +"/hr")
+                            .build());
+                }
+            } else {
+                {
+                    panelComponent.getChildren().add(LineComponent.builder()
+                            .left("Exp gained:")
+                            .right(context.getExpGained().toString() +  " | " + context.calculateRatePerHour(context.getExpGained()) +"/hr")
+                            .build());
+                }
+                {
+                    panelComponent.getChildren().add(LineComponent.builder()
+                            .left("Runes crafted:")
+                            .right(context.getRunesCrafted().toString() +  " | " + context.calculateRatePerHour(context.getRunesCrafted()) +"/hr")
+                            .build());
+                }
+                {
+                    panelComponent.getChildren().add(LineComponent.builder()
+                            .left("Est. gp earned:")
+                            .right(context.getEstimatedGpEarned() +  " | " + context.calculateRatePerHour((long) context.getEstimatedGpEarned()) +"/hr")
                             .build());
                 }
             }

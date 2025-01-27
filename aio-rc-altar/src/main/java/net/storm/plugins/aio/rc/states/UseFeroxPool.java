@@ -1,10 +1,12 @@
 package net.storm.plugins.aio.rc.states;
 
+import com.google.inject.Inject;
 import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.api.movement.pathfinder.model.BankLocation;
 import net.storm.plugins.aio.rc.AIORCConfig;
+import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
 import net.storm.plugins.aio.rc.enums.States;
@@ -17,6 +19,14 @@ import net.storm.sdk.widgets.Prayers;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class UseFeroxPool implements StateMachineInterface {
+    private final SharedContext context;
+    private final AIORCConfig config;
+
+    public UseFeroxPool(final SharedContext context) {
+        this.context = context;
+        this.config = context.getConfig();
+    }
+
     private boolean hasClickedPool = false;
     private boolean startCountingTicks = false;
 
@@ -34,8 +44,6 @@ public class UseFeroxPool implements StateMachineInterface {
         boolean isFullHP = Combat.getHealthPercent() == 100;
         boolean isFullRunEnergy = Movement.getRunEnergy() == 100;
         boolean isFullPrayer = Prayers.getMissingPoints() == 0;
-
-        AIORCConfig config = stateMachine.getContext().getConfig();
 
         if (config.usePoolAtFerox()) {
             if(Bank.isOpen()) {
@@ -57,7 +65,7 @@ public class UseFeroxPool implements StateMachineInterface {
             if (hasClickedPool && isFullHP && isFullRunEnergy && isFullPrayer) {
                 this.startCountingTicks = true;
                 if(ticksSincePoolRefreshment.get() >= 2) {
-                    stateMachine.setState(new WalkToAltar(), true);
+                    stateMachine.setState(new WalkToAltar(context), true);
                 }
             }
         } else {

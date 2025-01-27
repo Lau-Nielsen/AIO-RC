@@ -1,14 +1,15 @@
 package net.storm.plugins.aio.rc.states;
 
+import com.google.inject.Inject;
 import net.runelite.api.ItemID;
 import net.runelite.api.Skill;
 import net.runelite.api.Varbits;
+import net.runelite.api.vars.InputType;
 import net.runelite.client.eventbus.Subscribe;
+import net.storm.api.Static;
 import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
-import net.storm.api.events.AnimationChanged;
-import net.storm.api.events.ExperienceGained;
-import net.storm.api.events.InventoryChanged;
+import net.storm.api.events.*;
 import net.storm.api.magic.SpellBook;
 import net.storm.plugins.aio.rc.AIORCConfig;
 import net.storm.plugins.aio.rc.SharedContext;
@@ -22,26 +23,56 @@ import net.storm.sdk.game.Vars;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
 import net.storm.sdk.movement.Movement;
+import net.storm.sdk.widgets.Dialog;
+
+import java.util.Arrays;
 
 public class CraftRunes implements StateMachineInterface {
+    private final SharedContext context;
+    private final AIORCConfig config;
+
+
+    public CraftRunes(final SharedContext context) {
+        this.context = context;
+        this.config = context.getConfig();
+    }
+
     boolean interactedWithAltar = false;
 
     @Subscribe
     private void onExperienceGained(ExperienceGained gained) {
         if(gained.getSkill() == Skill.RUNECRAFT) {
+            context.setExpGained(context.getExpGained() + gained.getXpGained());
+        }
+    }
 
+    @Subscribe
+    private void onPlayerSpawned(PlayerSpawned spawnedPlayer) {
+        String[] runners = config.runnerNames().split(",");
+        if(Arrays.stream(runners).anyMatch(e -> e.equals(spawnedPlayer.getPlayer().getName()))) {
+            context.getTradeOrder().add(spawnedPlayer.getPlayer().getName());
+        }
+    }
+
+    @Subscribe
+    private void onPlayerDespawned(PlayerDespawned despawnedPlayer) {
+        String[] runners = config.runnerNames().split(",");
+        if(Arrays.stream(runners).anyMatch(e -> e.equals(despawnedPlayer.getPlayer().getName()))) {
+            context.getTradeOrder().removeIf(e -> e.equals(despawnedPlayer.getPlayer().getName()));
         }
     }
 
     @Subscribe
     private void onInventoryChanged(InventoryChanged invChange) {
-        // System.out.println("INVENTORY CHANGED: " + invChange.getAmount());
+        if(invChange.getItemId() == context.getCurrentlyCrafting().getItemID()) {
+            context.setRunesCrafted(context.getRunesCrafted() + invChange.getAmount());
+            context.setEstimatedGpEarned(context.getEstimatedGpEarned() + (invChange.getAmount() * Static.getItemManager().getItemPrice(invChange.getItemId())));
+        }
     }
 
     @Subscribe
     public void onAnimationChanged(AnimationChanged e) {
         if(e.getActor().getId() == Players.getLocal().getId() && e.getActor().getAnimation() == 791) {
-
             e.getActor().setAnimation(-1);
         }
     }
@@ -90,33 +121,47 @@ public class CraftRunes implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine, States state) {
-        SharedContext context = stateMachine.getContext();
-        AIORCConfig config = context.getConfig();
         ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 2, context.getConfig().runes().getAltarID());
 
-        if (config.bringBindingNecklace() && Inventory.contains(ItemID.BINDING_NECKLACE) &&
-                !Equipment.contains(ItemID.BINDING_NECKLACE)) {
-            Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Wear");
+        if(Inventory.contains(ItemID.BINDING_NECKLACE)) {
+            if(!Equipment.contains(ItemID.BINDING_NECKLACE)) {
+                Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Wear");
+            } else if (!Dialog.isOpen()) {
+                Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Destroy");
+            }
+        } else {
+            if (config.useImbue() && SpellBook.Lunar.MAGIC_IMBUE.canCast() &&
+                    Vars.getBit(Varbits.MAGIC_IMBUE) == 0) {
+                SpellBook.Lunar.MAGIC_IMBUE.cast();
+            }
+
+            if(!Movement.isWalking() && !interactedWithAltar) {
+                craftRunes(context);
+            }
+
+            context.checkTotalEssencesInInv();
+            if (altar != null && context.getTotalEssencesInInv() > 0) {
+                emptyPouches(context);
+                craftRunes(context);
+            }
+
+            context.checkTotalEssencesInInv();
+            if (context.getTotalEssencesInInv() == 0) {
+                context.checkChargesOnRote();
+                if(config.isUsingRunners()) {
+                    stateMachine.setState(new RecieveTrades(context), true);
+                } else {
+                    stateMachine.setState(new RechargeROTE(context), false);
+                }
+            }
         }
 
-        if (config.useImbue() && SpellBook.Lunar.MAGIC_IMBUE.canCast() &&
-                Vars.getBit(Varbits.MAGIC_IMBUE) == 0) {
-            SpellBook.Lunar.MAGIC_IMBUE.cast();
+        for (var i : Dialog.getOptions()) {
+            System.out.println(i.getName());
         }
 
-        if(!Movement.isWalking() && !interactedWithAltar) {
-            craftRunes(context);
-        }
-
-        context.checkTotalEssencesInInv();
-        if (altar != null && context.getTotalEssencesInInv() > 0) {
-            emptyPouches(context);
-            craftRunes(context);
-        }
-
-        context.checkTotalEssencesInInv();
-        if (context.getTotalEssencesInInv() == 0) {
-            stateMachine.setState(new Banking(), false);
+        if (Dialog.isOpen()) {
+            Dialog.chooseOption(0);
         }
 
     }

@@ -1,9 +1,11 @@
 package net.storm.plugins.aio.rc.states;
 
+import com.google.inject.Inject;
 import lombok.Setter;
 import net.storm.api.magic.SpellBook;
 import net.storm.api.widgets.InterfaceAddress;
 import net.storm.plugins.aio.rc.AIORCConfig;
+import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
 import net.storm.plugins.aio.rc.enums.States;
@@ -14,12 +16,19 @@ import net.storm.sdk.widgets.Dialog;
 import net.storm.sdk.widgets.Widgets;
 
 public class RepairPouch implements StateMachineInterface {
+    private final SharedContext context;
+    private final AIORCConfig config;
+
+    public RepairPouch(final SharedContext context) {
+        this.context = context;
+        this.config = context.getConfig();
+    }
+
     @Setter
     private static boolean waitingForDialog = false;
 
     @Override
     public void handleState(StateMachine stateMachine, States state) {
-        AIORCConfig config = stateMachine.getContext().getConfig();
         if (Inventory.contains(26786)) {
             // TODO make sure this check is in SETUP
 
@@ -44,9 +53,9 @@ public class RepairPouch implements StateMachineInterface {
             setWaitingForDialog(false);
 
             if (config.usePoolAtFerox() && config.bank() == Banks.FEROX_ENCLAVE_BANK) {
-                stateMachine.setState(new UseFeroxPool(), true);
+                stateMachine.setState(new UseFeroxPool(context), true);
             } else {
-                stateMachine.setState(new WalkToAltar(), true);
+                stateMachine.setState(new WalkToAltar(context), true);
             }
         }
     }

@@ -3,27 +3,29 @@ package net.storm.plugins.aio.rc.states;
 import lombok.Setter;
 import net.runelite.api.ItemID;
 import net.storm.api.events.AnimationChanged;
-import net.storm.api.items.loadouts.LoadoutItem;
-import net.storm.api.magic.Rune;
 import net.storm.api.widgets.EquipmentSlot;
 import net.storm.plugins.aio.rc.AIORCConfig;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
 import net.storm.plugins.aio.rc.enums.States;
-import net.storm.plugins.aio.rc.enums.Banks;
 import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
+import net.storm.sdk.items.loadouts.LoadoutFactory;
 import net.storm.sdk.movement.Movement;
 
 
 @Setter
 public class Banking implements StateMachineInterface {
-    private void OpenBank(final Banks bank) {
-        Bank.open(bank.getBankLocation());
+    private final SharedContext context;
+    private final AIORCConfig config;
+
+    public Banking(final SharedContext context) {
+        this.context = context;
+        this.config = context.getConfig();
     }
 
     public void onAnimationChanged(AnimationChanged e) {
@@ -33,15 +35,15 @@ public class Banking implements StateMachineInterface {
         }
     }
 
-    private void withdrawAndDrinkStamina(SharedContext sharedContext) {
+    private void withdrawAndDrinkStamina() {
         int stam_1 = ItemID.STAMINA_POTION1;
         int stam_2 = ItemID.STAMINA_POTION2;
         int stam_3 = ItemID.STAMINA_POTION3;
         int stam_4 = ItemID.STAMINA_POTION4;
 
 
-        if(sharedContext.getConfig().useStamina()) {
-            if(Movement.getRunEnergy() <= sharedContext.getConfig().staminaThreshold() &&
+        if(config.useStamina()) {
+            if(Movement.getRunEnergy() <= config.staminaThreshold() &&
                     !Movement.isStaminaBoosted() &&
                     Bank.isOpen() &&
                     !Bank.Inventory.contains(stam_1, stam_2, stam_3, stam_4)) {
@@ -56,17 +58,16 @@ public class Banking implements StateMachineInterface {
         }
     }
 
-    private void bankForBindingNecklace(SharedContext sharedContext) {
-        if(sharedContext.getConfig().bringBindingNecklace() &&
-                sharedContext.getTripsCompleted() % sharedContext.getConfig().bindingNecklaceFrequency() == 0) {
+    private void bankForBindingNecklace() {
+        if(config.bringBindingNecklace() &&
+                context.getTripsCompleted().get() % config.bindingNecklaceFrequency() == 0) {
             if(!Bank.Inventory.contains(ItemID.BINDING_NECKLACE)) {
                 Bank.withdraw(ItemID.BINDING_NECKLACE, 1);
             }
         }
     }
 
-    private void bankForTalisman(SharedContext context) {
-        AIORCConfig config = context.getConfig();
+    private void bankForTalisman() {
         Integer talismanId = context.getTalismanNeededForComboRunes();
         int amountToWithdraw = context.talismansToWithdraw();
 
@@ -109,8 +110,8 @@ public class Banking implements StateMachineInterface {
         Bank.withdrawAll(essenceID);
     }
 
-    private void bankForEssence(SharedContext sharedContext) {
-        boolean daeyalt = sharedContext.getConfig().useDaeyalt();
+    private void bankForEssence() {
+        boolean daeyalt = config.useDaeyalt();
         EssPouch small = EssPouch.SMALL;
         EssPouch medium = EssPouch.MEDIUM;
         EssPouch large = EssPouch.LARGE;
@@ -118,46 +119,46 @@ public class Banking implements StateMachineInterface {
         EssPouch colossal = EssPouch.COLOSSAL;
 
 
-        if (sharedContext.isUsingSmallPouch() && small.getAmount() < small.maxAmount() ) {
+        if (context.isUsingSmallPouch() && small.getAmount() < small.maxAmount() ) {
             small.fill();
         }
 
-        if (sharedContext.isUsingGiantPouch() && giant.getAmount() < giant.maxAmount() ) {
+        if (context.isUsingGiantPouch() && giant.getAmount() < giant.maxAmount() ) {
             withdrawEssence(daeyalt);
             giant.fill();
         }
 
-        if (sharedContext.isUsingMediumPouch() && medium.getAmount() < medium.maxAmount() ) {
+        if (context.isUsingMediumPouch() && medium.getAmount() < medium.maxAmount() ) {
             withdrawEssence(daeyalt);
             medium.fill();
         }
 
 
-        if (sharedContext.isUsingLargePouch() && large.getAmount() < large.maxAmount() ) {
+        if (context.isUsingLargePouch() && large.getAmount() < large.maxAmount() ) {
             withdrawEssence(daeyalt);
             large.fill();
         }
 
-        if (sharedContext.isUsingColossalPouch() && colossal.getAmount() < colossal.maxAmount() ) {
+        if (context.isUsingColossalPouch() && colossal.getAmount() < colossal.maxAmount() ) {
             withdrawEssence(daeyalt);
             colossal.fill();
         }
 
         fullSendWithdraw(daeyalt);
 
-        sharedContext.checkTotalEssencesInInv();
-        sharedContext.essenceInBank();
+        context.checkTotalEssencesInInv();
+        context.essenceInBank();
     }
 
-    private void depositRunes(AIORCConfig config, SharedContext sharedContext) {
-        int runeId = sharedContext.getCurrentlyCrafting().getItemID();
+    private void depositRunes() {
+        int runeId = context.getCurrentlyCrafting().getItemID();
         if (Bank.Inventory.contains(runeId) && config.bankCraftedRunes()) {
            Bank.depositAll(runeId);
         }
     }
 
-    private void withdrawAndEquipDuelingRing(SharedContext sharedContext) {
-        if (sharedContext.isUsingDuelingRings() && !sharedContext.checkForDuelingRing()) {
+    private void withdrawAndEquipDuelingRing() {
+        if (context.isUsingDuelingRings() && !context.checkForDuelingRing()) {
             Bank.withdraw(ItemID.RING_OF_DUELING8, 1);
 
             if(Equipment.fromSlot(EquipmentSlot.RING) == null &&
@@ -167,9 +168,10 @@ public class Banking implements StateMachineInterface {
         }
     }
 
-    private void withdrawAndEquipGlory(SharedContext sharedContext) {
-        if (sharedContext.isUsingGlories() && !Bank.Inventory.contains(ItemID.AMULET_OF_GLORY) &&
-                !Equipment.contains(ItemID.AMULET_OF_GLORY)) {
+    private void withdrawAndEquipGlory() {
+        if (context.isUsingGlories() && (Bank.Inventory.contains(ItemID.AMULET_OF_GLORY) ||
+                Equipment.contains(ItemID.AMULET_OF_GLORY))) {
+            Equipment.fromSlot(EquipmentSlot.AMULET).interact("Remove");
             Bank.withdraw(ItemID.AMULET_OF_GLORY6, 1);
 
             if(Equipment.fromSlot(EquipmentSlot.AMULET) == null &&
@@ -185,29 +187,26 @@ public class Banking implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine, States state) {
-        SharedContext context = stateMachine.getContext();
-        AIORCConfig config = stateMachine.getContext().getConfig();
-
         if (!Bank.isOpen()) {
-            OpenBank(config.bank());
+            Bank.open(config.bank().getBankLocation());
         }
 
         if (Bank.isOpen()) {
-            depositRunes(config, context);
-            withdrawAndEquipDuelingRing(context);
-            withdrawAndEquipGlory(context);
-            bankForTalisman(context);
-            bankForBindingNecklace(context);
-            withdrawAndDrinkStamina(context);
+            depositRunes();
+            withdrawAndEquipDuelingRing();
+            withdrawAndEquipGlory();
+            bankForTalisman();
+            bankForBindingNecklace();
+            withdrawAndDrinkStamina();
 
             if(context.maxEssenceCapacity() >= context.getTotalEssencesInInv()) {
-                bankForEssence(context);
+                bankForEssence();
             }
         }
 
         if(context.maxEssenceCapacity() == context.getTotalEssencesInInv()) {
             Bank.close();
-            stateMachine.setState(new RepairPouch(), false);
+            stateMachine.setState(new RepairPouch(context), false);
         }
     }
 

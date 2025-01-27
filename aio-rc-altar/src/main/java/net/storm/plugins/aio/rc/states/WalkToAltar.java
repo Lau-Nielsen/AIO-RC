@@ -1,5 +1,6 @@
 package net.storm.plugins.aio.rc.states;
 
+import net.runelite.api.ItemID;
 import net.runelite.api.coords.WorldArea;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameTick;
@@ -19,6 +20,7 @@ import net.storm.sdk.entities.Players;
 import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.GameThread;
 import net.storm.sdk.items.Bank;
+import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
 import net.storm.sdk.movement.Movement;
 import net.storm.sdk.utils.MessageUtils;
@@ -28,6 +30,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class WalkToAltar implements StateMachineInterface {
+    private final SharedContext context;
+    private final AIORCConfig config;
+
+    public WalkToAltar(final SharedContext context) {
+        this.context = context;
+        this.config = context.getConfig();
+    }
+
     private AtomicInteger counter = new AtomicInteger(0);
     private boolean startCounting = false;
 
@@ -38,7 +48,7 @@ public class WalkToAltar implements StateMachineInterface {
         }
     }
 
-    private void findClosestObstacleAndPass(SharedContext context) {
+    private void findClosestObstacleAndPass() {
         IPlayer localPlayer = Players.getLocal();
         WorldPoint myWorldPoint = localPlayer.getWorldArea().toWorldPoint();
         Map<String, ITileObject> objects = new HashMap<>();
@@ -49,7 +59,7 @@ public class WalkToAltar implements StateMachineInterface {
         objects.put("Gap", TileObjects.getNearest(x -> x.hasAction("Squeeze-through") && x.getName().equals("Gap")));
         objects.put("Passage", TileObjects.getNearest( x -> x.hasAction("Pass-through") && x.getName().equals("Passage")));
 
-        Set<String> allowedObjects = getStringSet(context);
+        Set<String> allowedObjects = getStringSet();
 
         ITileObject closestObject = objects.entrySet().stream()
                 .filter(entry -> allowedObjects.contains(entry.getKey()))
@@ -69,7 +79,7 @@ public class WalkToAltar implements StateMachineInterface {
         }
     }
 
-    private static Set<String> getStringSet(SharedContext context) {
+    private Set<String> getStringSet() {
         Set<String> allowedObjects = new HashSet<>();
 
         if (context.getConfig().abyssEyes()) {
@@ -115,16 +125,14 @@ public class WalkToAltar implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine, States state) {
-        AIORCConfig config = stateMachine.getContext().getConfig();
-
         Altar altar = config.runes();
         boolean closeToAltar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 20, altar.getAltarID()) != null;
 
         if (closeToAltar) {
             if(config.isRunner()) {
-                stateMachine.setState(new TradePlayer(), true);
+                stateMachine.setState(new RunnerTradePlayer(context), true);
             } else {
-                stateMachine.setState(new CraftRunes(), true);
+                stateMachine.setState(new CraftRunes(context), true);
             }
         }
 
@@ -157,7 +165,7 @@ public class WalkToAltar implements StateMachineInterface {
             }
 
             if(!startCounting && abyssalRift != null && abyssalRift.distanceTo(myWorldPoint) > 14) {
-                findClosestObstacleAndPass(stateMachine.getContext());
+                findClosestObstacleAndPass();
             }
 
             if (counter.get() > 50) {

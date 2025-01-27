@@ -9,15 +9,13 @@ import net.storm.plugins.aio.rc.states.Banking;
 public class StateMachine {
     private StateMachineInterface currentState;
     @Getter
-    private final SharedContext context;
     private final EventBus eventBus;
     @Setter
     private static boolean hasEventBusSubscription = false;
 
-    public StateMachine(SharedContext context, EventBus eventBus) {
-        this.context = context;
+    public StateMachine(EventBus eventBus, SharedContext context) {
         this.eventBus = eventBus;
-        this.currentState = new Banking(); // Default state
+        this.currentState = new Banking(context); // Default state
     }
 
     public void setState(StateMachineInterface newState, boolean withEventbus) {

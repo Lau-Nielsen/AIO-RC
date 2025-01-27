@@ -1,5 +1,6 @@
 package net.storm.plugins.aio.rc.states;
 
+import com.google.inject.Inject;
 import net.runelite.api.ItemID;
 import net.runelite.api.Quest;
 import net.runelite.api.Skill;
@@ -7,6 +8,7 @@ import net.storm.api.domain.Identifiable;
 import net.storm.api.domain.items.IItem;
 import net.storm.api.items.loadouts.LoadoutItem;
 import net.storm.api.magic.SpellBook;
+import net.storm.api.widgets.EquipmentSlot;
 import net.storm.plugins.aio.rc.AIORCConfig;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
@@ -27,9 +29,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Setup implements StateMachineInterface {
+    private final SharedContext context;
+    private final AIORCConfig config;
+
+    public Setup(final SharedContext context) {
+        this.context = context;
+        this.config = context.getConfig();
+    }
+
     private boolean forceAddressErrors = false;
 
-    private void questCheck(Quest quest, Altar altar, AIORCConfig config) {
+    private void questCheck(Quest quest, Altar altar) {
         if (config.runes() == altar && !Quests.isFinished(quest)) {
             MessageUtils.addMessage("You cannot  " +
                             (config.isRunner() ? "run essences to " + altar.name()  : "craft " + altar.name() + " runes") +
@@ -67,7 +77,7 @@ public class Setup implements StateMachineInterface {
                 Equipment.getAll().stream().anyMatch(item -> tinderboxes.contains(item.getId()));
     }
 
-    private void abyssCheck(AIORCConfig config) {
+    private void abyssCheck() {
         if(config.useAbyss()) {
             if(config.abyssRock() && !hasPickaxe()) {
                 MessageUtils.addMessage("Deselect rocks from abyss, or add a pickaxe to your loadout.", Color.red);
@@ -98,7 +108,7 @@ public class Setup implements StateMachineInterface {
 
     }
 
-    private void imbueCheck(AIORCConfig config) {
+    private void imbueCheck() {
         if(config.useImbue()) {
             if(!SpellBook.Lunar.MAGIC_IMBUE.haveRunesAvailable()) {
                 MessageUtils.addMessage("You're either missing runes to cast Imbue add them to the loadout.", Color.red);
@@ -122,7 +132,7 @@ public class Setup implements StateMachineInterface {
     private boolean hasRcCapePerk() {
         List<Integer> rcPerkCapes = Arrays.asList(ItemID.MAX_CAPE, ItemID.RUNECRAFT_CAPE, ItemID.RUNECRAFT_CAPET, ItemID.MAX_CAPE_13342);
         boolean rcCapePerk = false;
-        IItem myCape = Equipment.get(LoadoutItem.Slot.CAPE.getSlotIndex());
+        IItem myCape = Equipment.get(EquipmentSlot.CAPE.getSlot());
 
         if(myCape != null) {
             rcCapePerk = rcPerkCapes.contains(myCape.getId());
@@ -131,7 +141,7 @@ public class Setup implements StateMachineInterface {
         return rcCapePerk;
     }
 
-    private void npcContactCheck(AIORCConfig config) {
+    private void npcContactCheck() {
         boolean rcCapePerk = hasRcCapePerk();
 
         if(!rcCapePerk && !config.useAbyss() && !config.repairOnDarkMage()) {
@@ -160,26 +170,26 @@ public class Setup implements StateMachineInterface {
         forceAddressErrors = true;
     }
 
-    private void essencePouchCheck(AIORCConfig config, SharedContext sharedContext) {
+    private void essencePouchCheck() {
         Collection<LoadoutItem> items = config.loadout().getItems();
         int rcLevel = Skills.getLevel(Skill.RUNECRAFT);
 
         if (items.stream().anyMatch( item -> item.getId() == ItemID.SMALL_POUCH)) {
-            sharedContext.setUsingSmallPouch(true);
+            context.setUsingSmallPouch(true);
         }
 
         if (items.stream().anyMatch( item -> item.getId() == ItemID.MEDIUM_POUCH)) {
             if(rcLevel < 25) {
                 insufficientRcLevel("Medium Pouch");
             } else {
-                sharedContext.setUsingMediumPouch(true);
+                context.setUsingMediumPouch(true);
             }
         }
         if (items.stream().anyMatch( item -> item.getId() == ItemID.LARGE_POUCH)) {
             if(rcLevel < 50) {
                 insufficientRcLevel("Large Pouch");
             } else {
-                sharedContext.setUsingLargePouch(true);
+                context.setUsingLargePouch(true);
             }
 
         }
@@ -188,12 +198,12 @@ public class Setup implements StateMachineInterface {
             if(rcLevel < 75) {
                 insufficientRcLevel("Giant Pouch");
             } else {
-                sharedContext.setUsingGiantPouch(true);
+                context.setUsingGiantPouch(true);
             }
         }
 
-        boolean pouchMismatch = sharedContext.isUsingGiantPouch() || sharedContext.isUsingSmallPouch() ||
-                sharedContext.isUsingMediumPouch() || sharedContext.isUsingLargePouch();
+        boolean pouchMismatch = context.isUsingGiantPouch() || context.isUsingSmallPouch() ||
+                context.isUsingMediumPouch() || context.isUsingLargePouch();
 
         if (items.stream().anyMatch( item -> item.getId() == ItemID.COLOSSAL_POUCH)) {
             if(pouchMismatch) {
@@ -201,17 +211,17 @@ public class Setup implements StateMachineInterface {
             } else if(rcLevel < 25) {
                 insufficientRcLevel("Colossal Pouch");
             } else {
-                sharedContext.setUsingColossalPouch(true);
+                context.setUsingColossalPouch(true);
             }
         }
     }
 
-    private void riftAccess(AIORCConfig config, SharedContext sharedContext) {
+    private void riftAccess() {
         boolean inventoryCheck = false;
         boolean equipmentCheck = false;
 
         List<Integer> equipmentList = Equipment.getAll().stream().map(Identifiable::getId).collect(Collectors.toList());
-        boolean hatTiara = sharedContext.isHatOfTheEyeCatalytic();
+        boolean hatTiara = context.isHatOfTheEyeCatalytic();
 
         if(hatTiara) {
             equipmentList.add(ItemID.CATALYTIC_TIARA);
@@ -237,9 +247,9 @@ public class Setup implements StateMachineInterface {
 
     }
 
-    private void comboRuneCheck(SharedContext sharedContext) {
-        if (sharedContext.getRuneNeededForComboRunesId() != null) {
-           if (!Inventory.contains(sharedContext.getRuneNeededForComboRunesId())) {
+    private void comboRuneCheck() {
+        if (context.getRuneNeededForComboRunesId() != null) {
+           if (!Inventory.contains(context.getRuneNeededForComboRunesId())) {
                MessageUtils.addMessage("You're missing the required rune for this comboRune!", Color.red);
                forceAddressErrors = true;
            }
@@ -249,26 +259,25 @@ public class Setup implements StateMachineInterface {
     @Override
     public void handleState(StateMachine stateMachine, States state) {
         forceAddressErrors = false;
-        AIORCConfig config = stateMachine.getContext().getConfig();
 
-        questCheck(Quest.MOURNINGS_END_PART_II, Altar.DEATH, config);
-        questCheck(Quest.LUNAR_DIPLOMACY, Altar.ASTRAL, config);
-        questCheck(Quest.SINS_OF_THE_FATHER, Altar.BLOOD, config);
-        questCheck(Quest.LOST_CITY, Altar.COSMIC, config);
-        questCheck(Quest.CHILDREN_OF_THE_SUN, Altar.SUNFIRE, config);
-        questCheck(Quest.DRAGON_SLAYER_II, Altar.WRATH, config);
+        questCheck(Quest.MOURNINGS_END_PART_II, Altar.DEATH);
+        questCheck(Quest.LUNAR_DIPLOMACY, Altar.ASTRAL);
+        questCheck(Quest.SINS_OF_THE_FATHER, Altar.BLOOD);
+        questCheck(Quest.LOST_CITY, Altar.COSMIC);
+        questCheck(Quest.CHILDREN_OF_THE_SUN, Altar.SUNFIRE);
+        questCheck(Quest.DRAGON_SLAYER_II, Altar.WRATH);
 
-        comboRuneCheck(stateMachine.getContext());
-        abyssCheck(config);
-        imbueCheck(config);
-        npcContactCheck(config);
-        essencePouchCheck(config, stateMachine.getContext());
-        riftAccess(config, stateMachine.getContext());
+        comboRuneCheck();
+        abyssCheck();
+        imbueCheck();
+        npcContactCheck();
+        essencePouchCheck();
+        riftAccess();
 
         System.out.println(forceAddressErrors);
 
         if(!forceAddressErrors) {
-            stateMachine.setState(new Banking(), true);
+            stateMachine.setState(new Banking(context), true);
         }
 
     }
