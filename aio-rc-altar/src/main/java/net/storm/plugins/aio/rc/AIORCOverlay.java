@@ -3,6 +3,7 @@ package net.storm.plugins.aio.rc;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.text.DecimalFormat;
 
 import com.google.inject.Inject;
 import net.runelite.client.ui.overlay.OverlayPanel;
@@ -20,6 +21,8 @@ class AIORCOverlay extends OverlayPanel
         this.context = context;
         this.config = context.getConfig();
     }
+
+    DecimalFormat df = new DecimalFormat("#.00k");
 
     @Override
     public Dimension render(Graphics2D graphics)
@@ -156,19 +159,19 @@ class AIORCOverlay extends OverlayPanel
                 {
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("Exp gained:")
-                            .right(context.getExpGained() / 1000 +  "k | " + context.calculateRatePerHour(context.getExpGained()) +"/hr")
+                            .right(df.format(context.getExpGained() / 1000) +  "k | " + context.calculateRatePerHour(context.getExpGained()) +"/hr")
                             .build());
                 }
                 {
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("Runes crafted:")
-                            .right(context.getRunesCrafted() / 1000 +  "k | " + context.calculateRatePerHour(context.getRunesCrafted()) +"/hr")
+                            .right(df.format(context.getRunesCrafted() / 1000) +  "k | " + context.calculateRatePerHour(context.getRunesCrafted()) +"/hr")
                             .build());
                 }
                 {
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("Est. gp earned:")
-                            .right(context.getEstimatedGpEarned() / 1000 +  "k | " + context.calculateRatePerHour((long) context.getEstimatedGpEarned()) +"/hr")
+                            .right(df.format(context.getEstimatedGpEarned() / 1000) +  "k | " + context.calculateRatePerHour((long) context.getEstimatedGpEarned()) +"/hr")
                             .build());
                 }
             }
