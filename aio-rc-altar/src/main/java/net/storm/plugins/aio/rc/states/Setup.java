@@ -249,15 +249,6 @@ public class Setup implements StateMachineInterface {
 
     }
 
-    private void comboRuneCheck() {
-        if (context.getRuneNeededForComboRunesId() != null && !config.isRunner()) {
-           if (!Inventory.contains(context.getRuneNeededForComboRunesId())) {
-               MessageUtils.addMessage("You're missing the required rune for this comboRune!", Color.red);
-               forceAddressErrors = true;
-           }
-        }
-    }
-
     @Override
     public void handleState(StateMachine stateMachine, States state) {
         forceAddressErrors = false;
@@ -269,7 +260,6 @@ public class Setup implements StateMachineInterface {
         questCheck(Quest.CHILDREN_OF_THE_SUN, Altar.SUNFIRE);
         questCheck(Quest.DRAGON_SLAYER_II, Altar.WRATH);
 
-        comboRuneCheck();
         abyssCheck();
         imbueCheck();
         npcContactCheck();

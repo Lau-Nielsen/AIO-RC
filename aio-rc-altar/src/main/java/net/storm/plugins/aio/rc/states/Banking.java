@@ -205,6 +205,17 @@ public class Banking implements StateMachineInterface {
         }
     }
 
+    private void withdrawRunesForComboRunes(){
+        if(!Bank.Inventory.contains(context.getRuneNeededForComboRunesId())) {
+            if(Bank.contains(context.getRuneNeededForComboRunesId())) {
+                Bank.withdrawAll(context.getRuneNeededForComboRunesId());
+            } else {
+                context.setCurrentRunningState(RunningState.STOPPED);
+                MessageUtils.addMessage("Out of runes needed for combo runes, stopping plugin", Color.red);
+            }
+        }
+    }
+
     @Override
     public void handleState(StateMachine stateMachine, States state) {
         if (!Bank.isOpen()) {
@@ -215,9 +226,11 @@ public class Banking implements StateMachineInterface {
             depositRunes();
             withdrawAndEquipDuelingRing();
             withdrawAndEquipGlory();
+            withdrawRunesForComboRunes();
             bankForTalisman();
             bankForBindingNecklace();
             withdrawAndDrinkStamina();
+
 
             if(context.maxEssenceCapacity() >= context.getTotalEssencesInInv()) {
                 bankForEssence();
