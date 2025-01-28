@@ -70,9 +70,9 @@ public class CraftRunes implements StateMachineInterface {
 
     @Subscribe
     public void onAnimationChanged(AnimationChanged e) {
-        if(e.getActor().getId() == Players.getLocal().getId() && e.getActor().getAnimation() == 791) {
-            e.getActor().setAnimation(-1);
-        }
+//        if(e.getActor().getId() == Players.getLocal().getId() && e.getActor().getAnimation() == 791) {
+//            e.getActor().setAnimation(-1);
+//        }
     }
 
     private boolean hasSpace(int amount) {
@@ -119,7 +119,7 @@ public class CraftRunes implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine) {
-        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 6, context.getConfig().runes().getAltarID());
+        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 4, context.getConfig().runes().getAltarID());
 
         if(Inventory.contains(ItemID.BINDING_NECKLACE) && !Dialog.isOpen()) {
             if (!Equipment.contains(ItemID.BINDING_NECKLACE)) {
@@ -165,6 +165,7 @@ public class CraftRunes implements StateMachineInterface {
             if(config.isUsingRunners()) {
                 stateMachine.setState(new RecieveTrades(context), true);
             } else {
+                Players.getLocal().setAnimation(-1);
                 stateMachine.setState(new RechargeROTE(context), false);
             }
         }

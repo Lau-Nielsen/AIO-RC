@@ -25,7 +25,7 @@ public class StateMachine {
         }
 
         // Speed up state transitions..
-        if(this.currentState.getStateName() != States.BankSetupAndStock){
+        if(this.currentState != null && this.currentState.getStateName() != States.BankSetupAndStock){
             this.currentState = newState;
             this.currentState.handleState(this);
         } else {
@@ -46,6 +46,8 @@ public class StateMachine {
     }
 
     public void handleState() {
-        currentState.handleState(this);
+        if(currentState != null) {
+            currentState.handleState(this);
+        }
     }
 }

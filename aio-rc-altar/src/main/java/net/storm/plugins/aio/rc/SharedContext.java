@@ -202,7 +202,7 @@ public class SharedContext {
 
     public void checkDuelingRingsInBank() {
         if(Bank.isOpen()) {
-            this.gloriesInBank = Bank.getCount(true, ItemID.RING_OF_DUELING8);
+            this.duelingRingsInBank = Bank.getCount(true, ItemID.RING_OF_DUELING8);
         }
     }
 

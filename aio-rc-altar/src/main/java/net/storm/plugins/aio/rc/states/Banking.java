@@ -155,9 +155,6 @@ public class Banking implements StateMachineInterface {
 
         if(context.arePouchesFull()) {
             withdrawEssence(daeyalt, 28);
-
-            // should be valid to close the bank here, and it should save a tick
-            Bank.close();
         }
 
         context.checkTotalEssencesInInv();
@@ -179,12 +176,11 @@ public class Banking implements StateMachineInterface {
                 MessageUtils.addMessage("Out of dueling rings, stopping plugin", Color.red);
             } else {
                 Bank.withdraw(duelingId, 1);
-
-                if(Equipment.fromSlot(EquipmentSlot.RING) == null &&
-                        Bank.Inventory.contains(duelingId)) {
-                    Bank.Inventory.getFirst(duelingId).interact("Wear");
-                }
             }
+        }
+
+        if(Bank.Inventory.contains(duelingId) && config.loadout().equipmentItemsIds().contains(duelingId)) {
+            Bank.Inventory.getFirst(duelingId).interact("Wear");
         }
     }
 
@@ -196,8 +192,7 @@ public class Banking implements StateMachineInterface {
                 Equipment.fromSlot(EquipmentSlot.AMULET).interact("Remove");
                 Bank.withdraw(gloryID, 1);
 
-                if(Equipment.fromSlot(EquipmentSlot.AMULET) == null &&
-                        Bank.Inventory.contains(ItemID.AMULET_OF_GLORY6)) {
+                if(Bank.Inventory.contains(ItemID.AMULET_OF_GLORY6)) {
                     Bank.Inventory.getFirst(gloryID).interact("Wear");
                 }
             } else {
@@ -244,6 +239,7 @@ public class Banking implements StateMachineInterface {
         }
 
         if(context.maxEssenceCapacity() == context.getTotalEssencesInInv()) {
+            Bank.close();
             if(context.checkForBrokenPouch()) {
                 stateMachine.setState(new RepairPouch(context), false);
             } else if (config.usePoolAtFerox()) {

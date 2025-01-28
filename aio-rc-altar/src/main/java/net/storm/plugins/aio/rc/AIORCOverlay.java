@@ -159,19 +159,19 @@ class AIORCOverlay extends OverlayPanel
                 {
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("Exp gained:")
-                            .right(df.format(context.getExpGained() / 1000) +  "k | " + context.calculateRatePerHour(context.getExpGained()) +"/hr")
+                            .right((context.getExpGained() > 10000 ? df.format((double) context.getExpGained() / 1000) : context.getExpGained()) +  " | " + context.calculateRatePerHour(context.getExpGained()) +"/hr")
                             .build());
                 }
                 {
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("Runes crafted:")
-                            .right(df.format(context.getRunesCrafted() / 1000) +  "k | " + context.calculateRatePerHour(context.getRunesCrafted()) +"/hr")
+                            .right((context.getRunesCrafted() > 10000 ? df.format((double) context.getRunesCrafted() / 1000) : context.getRunesCrafted()) +  " | " + context.calculateRatePerHour(context.getRunesCrafted()) +"/hr")
                             .build());
                 }
                 {
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("Est. gp earned:")
-                            .right(df.format(context.getEstimatedGpEarned() / 1000) +  "k | " + context.calculateRatePerHour((long) context.getEstimatedGpEarned()) +"/hr")
+                            .right(df.format(context.getEstimatedGpEarned() / 1000) +  " | " + context.calculateRatePerHour((long) context.getEstimatedGpEarned()) +"/hr")
                             .build());
                 }
             }
