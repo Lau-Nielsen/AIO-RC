@@ -149,11 +149,11 @@ public class Banking implements StateMachineInterface {
         }
 
         if (context.isUsingColossalPouch() && colossal.getAmount() < colossal.maxAmount() ) {
-            withdrawEssence(daeyalt, 0);
+            withdrawEssence(daeyalt, 28);
             colossal.fill();
         }
 
-        withdrawEssence(daeyalt, 0);
+        withdrawEssence(daeyalt, 28);
 
         context.checkTotalEssencesInInv();
         context.checkEssenceInBank();
