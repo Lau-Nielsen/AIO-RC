@@ -19,7 +19,6 @@ public class StateMachine {
     }
 
     public void setState(StateMachineInterface newState, boolean withEventbus) {
-        System.out.println("EVENTBUS TERMINATE FOR: " + this.currentState.getStateName() + " " + hasEventBusSubscription);
         if (hasEventBusSubscription){
             eventBus.unregister(this.currentState);
             setHasEventBusSubscription(false);
@@ -34,6 +33,9 @@ public class StateMachine {
     }
 
     public States getCurrentStateName() {
+        if(this.currentState == null) {
+            return null;
+        }
         return this.currentState.getStateName();
     }
 

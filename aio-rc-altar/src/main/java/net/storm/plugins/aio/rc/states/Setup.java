@@ -266,8 +266,6 @@ public class Setup implements StateMachineInterface {
         essencePouchCheck();
         riftAccess();
 
-        System.out.println(forceAddressErrors);
-
         if(!forceAddressErrors) {
             stateMachine.setState(new Banking(context), true);
         }

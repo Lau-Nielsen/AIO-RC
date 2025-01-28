@@ -87,7 +87,6 @@ public class Banking implements StateMachineInterface {
 
             if(Bank.contains(talismanId)) {
                 for (int i = 0 ; i < amountToWithdraw ; i++) {
-                    System.out.println("ALO : " + 1);
                     Bank.withdraw(talismanId, 1);
                 }
             } else {

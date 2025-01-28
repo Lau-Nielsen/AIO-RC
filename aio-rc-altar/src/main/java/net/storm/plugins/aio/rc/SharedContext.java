@@ -302,8 +302,6 @@ public class SharedContext {
         } else {
             this.currentlyCrafting = this.config.runes().getRune();
         }
-
-        System.out.println(this.currentlyCrafting +" "+ this.config.runes());
     }
 
     public String calculateRatePerHour(long amount) {

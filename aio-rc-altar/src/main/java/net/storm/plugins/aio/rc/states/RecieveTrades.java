@@ -44,7 +44,6 @@ public class RecieveTrades implements StateMachineInterface {
     private void onPlayerSpawned(PlayerSpawned spawnedPlayer) {
         String[] runners = config.runnerNames().split(",");
 
-        System.out.println("player spawned: " +  spawnedPlayer.getPlayer().getName());
         if(Arrays.stream(runners).anyMatch(e -> e.equals(spawnedPlayer.getPlayer().getName()))) {
             context.getTradeOrder().add(spawnedPlayer.getPlayer().getName());
         }
@@ -53,11 +52,7 @@ public class RecieveTrades implements StateMachineInterface {
     @Subscribe
     private void onPlayerDespawned(PlayerDespawned despawnedPlayer) {
         String[] runners = config.runnerNames().split(",");
-        System.out.println("player despaned: " +  despawnedPlayer.getPlayer().getName());
 
-        for (var i : runners) {
-            System.out.println(i);
-        }
         if(Arrays.stream(runners).anyMatch(e -> e.equals(despawnedPlayer.getPlayer().getName()))) {
             context.getTradeOrder().removeIf(e -> e.equals(despawnedPlayer.getPlayer().getName()));
         }
@@ -79,9 +74,6 @@ public class RecieveTrades implements StateMachineInterface {
             countFlag = true;
         }
 
-        for (var i : context.getTradeOrder()) {
-            System.out.println(i);
-        }
 
         if(Trade.isOpen()) {
             if(!Trade.getAll(true, ItemID.PURE_ESSENCE).isEmpty()) {

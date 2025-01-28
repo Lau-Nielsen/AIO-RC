@@ -49,8 +49,6 @@ public class BankSetupAndStock implements StateMachineInterface {
         if(isEquipmentCorrect()) {
             equipment.clear();
         }
-
-        equipment.forEach((id, quantity) -> System.out.println("EQUIPMENT: " + id + " " + quantity));
     }
 
     // Inventory ids shouldn't differ

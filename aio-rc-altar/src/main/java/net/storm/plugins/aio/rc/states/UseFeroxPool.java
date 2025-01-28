@@ -67,8 +67,6 @@ public class UseFeroxPool implements StateMachineInterface {
                     stateMachine.setState(new WalkToAltar(context), true);
                 }
             }
-        } else {
-            System.out.println("Invalid event in PAUSED state.");
         }
     }
 

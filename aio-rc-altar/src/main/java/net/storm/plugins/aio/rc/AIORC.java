@@ -102,7 +102,6 @@ public class AIORC extends LoopedPlugin {
             setStateMachine(new StateMachine(eventBus));
             this.stateMachine.setState(new BankSetupAndStock(context), true);
             context.checkCurrentRuneBeingCrafted();
-            System.out.println(context.getCurrentlyCrafting());
             System.out.println("Initializing AIO RC Plugin");
         }
 

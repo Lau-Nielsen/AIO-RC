@@ -177,8 +177,6 @@ public class WalkToAltar implements StateMachineInterface {
                 ITileObject runeRift = TileObjects.getNearest(x -> x.getId() == config.runes().getAbyssRiftID());
                 INPC darkMage = NPCs.getNearest(x -> x.hasAction("Repairs"));
 
-                System.out.println(darkMage.getName() + " " + runeRift.getName());
-
                 if(Inventory.contains(EssPouch.COLOSSAL.getBrokenItemID(), EssPouch.GIANT.getBrokenItemID(),
                         EssPouch.LARGE.getBrokenItemID(), EssPouch.MEDIUM.getBrokenItemID())
                         && !Players.getLocal().isInteracting() && config.repairOnDarkMage() && config.useAbyss()) {

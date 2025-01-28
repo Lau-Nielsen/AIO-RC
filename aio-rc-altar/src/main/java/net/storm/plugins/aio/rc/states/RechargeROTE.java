@@ -45,8 +45,6 @@ public class RechargeROTE implements StateMachineInterface {
             Bank.withdrawAll(fireID);
         }
 
-        System.out.println(containsRunes);
-
         if (containsRunes) {
             if(Bank.isOpen()) {
                 Bank.close();
