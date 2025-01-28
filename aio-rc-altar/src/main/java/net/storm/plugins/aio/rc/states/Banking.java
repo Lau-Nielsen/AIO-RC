@@ -69,11 +69,13 @@ public class Banking implements StateMachineInterface {
     private void bankForBindingNecklace() {
         if(config.bringBindingNecklace() &&
                 context.getTripsCompleted().get() % config.bindingNecklaceFrequency() == 0) {
-            if(!Bank.Inventory.contains(ItemID.BINDING_NECKLACE)) {
-                Bank.withdraw(ItemID.BINDING_NECKLACE, 1);
-            } else {
+            if(!Bank.contains(ItemID.BINDING_NECKLACE)) {
                 context.setCurrentRunningState(RunningState.STOPPED);
                 MessageUtils.addMessage("Out of binding necklaces, stopping plugin", Color.red);
+            }
+
+            if(!Bank.Inventory.contains(ItemID.BINDING_NECKLACE)) {
+                Bank.withdraw(ItemID.BINDING_NECKLACE, 1);
             }
         }
     }
