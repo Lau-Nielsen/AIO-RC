@@ -236,7 +236,6 @@ public class Banking implements StateMachineInterface {
 
 
             if(context.maxEssenceCapacity() >= context.getTotalEssencesInInv()) {
-                System.out.println("hello?");
                 bankForEssence();
             }
         }

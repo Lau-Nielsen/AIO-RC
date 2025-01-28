@@ -24,7 +24,13 @@ public class StateMachine {
             setHasEventBusSubscription(false);
         }
 
-        this.currentState = newState;
+        // Speed up state transitions..
+        if(this.currentState.getStateName() != States.BankSetupAndStock){
+            this.currentState = newState;
+            this.currentState.handleState(this);
+        } else {
+            this.currentState = newState;
+        }
 
         if(withEventbus) {
             eventBus.register(newState);

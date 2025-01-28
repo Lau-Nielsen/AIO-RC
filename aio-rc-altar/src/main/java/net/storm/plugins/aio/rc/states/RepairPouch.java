@@ -28,10 +28,8 @@ public class RepairPouch implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine) {
-        if (Inventory.contains(26786)) {
-            // TODO make sure this check is in SETUP
-
-            if (SpellBook.LUNAR == SpellBook.getCurrent() && SpellBook.Lunar.NPC_CONTACT.canCast()) {
+        if (context.hasBrokenPouch()) {
+            if (SpellBook.Lunar.NPC_CONTACT.canCast()) {
                 if (!waitingForDialog) {
                     Magic.cast(SpellBook.Lunar.NPC_CONTACT);
 

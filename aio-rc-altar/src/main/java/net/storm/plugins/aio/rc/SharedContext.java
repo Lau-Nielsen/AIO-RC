@@ -4,8 +4,10 @@ import com.google.inject.Singleton;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.ItemID;
+import net.runelite.api.Skill;
 import net.runelite.client.game.ItemVariationMapping;
 import net.storm.plugins.aio.rc.enums.*;
+import net.storm.sdk.game.Skills;
 import net.storm.sdk.game.Vars;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
@@ -138,6 +140,7 @@ public class SharedContext {
     public boolean checkForLargePouch() {
         Collection<Integer> pouchIds = ItemVariationMapping.getVariations(ItemVariationMapping.map(ItemID.LARGE_POUCH));
         return Inventory.contains(i -> pouchIds.contains(i.getId()));
+
     }
 
     public boolean checkForGiantPouch() {
@@ -238,6 +241,11 @@ public class SharedContext {
         }
 
         return true;
+    }
+
+    public boolean hasBrokenPouch() {
+        return Inventory.contains(EssPouch.COLOSSAL.getBrokenItemID(), EssPouch.GIANT.getBrokenItemID(),
+                EssPouch.LARGE.getBrokenItemID(), EssPouch.MEDIUM.getBrokenItemID());
     }
 
     public int maxEssenceCapacity() {

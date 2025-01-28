@@ -129,7 +129,6 @@ public class WalkToAltar implements StateMachineInterface {
                 stateMachine.setState(new RunnerTradePlayer(context), true);
             } else {
                 stateMachine.setState(new CraftRunes(context), true);
-                stateMachine.handleState();
             }
         }
 
@@ -175,8 +174,7 @@ public class WalkToAltar implements StateMachineInterface {
                 ITileObject runeRift = TileObjects.getNearest(x -> x.getId() == config.runes().getAbyssRiftID());
                 INPC darkMage = NPCs.getNearest(x -> x.hasAction("Repairs"));
 
-                if(Inventory.contains(EssPouch.COLOSSAL.getBrokenItemID(), EssPouch.GIANT.getBrokenItemID(),
-                        EssPouch.LARGE.getBrokenItemID(), EssPouch.MEDIUM.getBrokenItemID())
+                if(context.hasBrokenPouch()
                         && !Players.getLocal().isInteracting() && config.repairOnDarkMage() && config.useAbyss()) {
                     darkMage.interact("Repairs");
                 } else if (runeRift != null && !Players.getLocal().isMoving()) {
