@@ -108,10 +108,10 @@ public class Banking implements StateMachineInterface {
         if(Bank.contains(essenceID)) {
             if (Bank.Inventory.getCount(false, essenceID) <= countCheck) {
                 Bank.withdrawAll(essenceID);
-            } else {
-                context.setCurrentRunningState(RunningState.STOPPED);
-                MessageUtils.addMessage("Out of essences, stopping plugin", Color.red);
             }
+        } else {
+            context.setCurrentRunningState(RunningState.STOPPED);
+            MessageUtils.addMessage("Out of essences, stopping plugin", Color.red);
         }
     }
 
