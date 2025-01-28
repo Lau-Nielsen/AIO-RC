@@ -118,45 +118,57 @@ public class CraftRunes implements StateMachineInterface {
     }
 
     @Override
-    public void handleState(StateMachine stateMachine, States state) {
-        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 2, context.getConfig().runes().getAltarID());
+    public void handleState(StateMachine stateMachine) {
+        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 3, context.getConfig().runes().getAltarID());
 
         if(Inventory.contains(ItemID.BINDING_NECKLACE) && !Dialog.isOpen()) {
-            if(!Equipment.contains(ItemID.BINDING_NECKLACE)) {
+            if (!Equipment.contains(ItemID.BINDING_NECKLACE)) {
                 Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Wear");
             } else if (!Dialog.isOpen()) {
                 Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Destroy");
             }
-        } else {
+        }
+
+        if (Players.getLocal().isMoving() && interactedWithAltar) {
+
             if (config.useImbue() && SpellBook.Lunar.MAGIC_IMBUE.canCast() &&
                     Vars.getBit(Varbits.MAGIC_IMBUE) == 0) {
                 SpellBook.Lunar.MAGIC_IMBUE.cast();
             }
 
-            if(!Movement.isWalking() && !interactedWithAltar) {
-                craftRunes(context);
-            }
-
-            context.checkTotalEssencesInInv();
-            if (altar != null && context.getTotalEssencesInInv() > 0) {
-                emptyPouches();
-                craftRunes(context);
-            }
-
-            context.checkTotalEssencesInInv();
-            if (context.getTotalEssencesInInv() == 0) {
-                context.checkChargesOnRote();
-                if(config.isUsingRunners()) {
-                    stateMachine.setState(new RecieveTrades(context), true);
-                } else {
-                    stateMachine.setState(new RechargeROTE(context), false);
+            if(Inventory.contains(ItemID.BINDING_NECKLACE) && !Dialog.isOpen()) {
+                if (!Equipment.contains(ItemID.BINDING_NECKLACE)) {
+                    Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Wear");
+                } else if (!Dialog.isOpen()) {
+                    Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Destroy");
                 }
             }
+
+            if (Dialog.isOpen()) {
+                Keyboard.type(1);
+            }
         }
 
-        if (Dialog.isOpen()) {
-            Keyboard.type(1);
+        if(!Movement.isWalking() && !interactedWithAltar) {
+            craftRunes(context);
         }
+
+        context.checkTotalEssencesInInv();
+        if (altar != null && context.getTotalEssencesInInv() > 0) {
+            emptyPouches();
+            craftRunes(context);
+        }
+
+        context.checkTotalEssencesInInv();
+        if (context.getTotalEssencesInInv() == 0) {
+            context.checkChargesOnRote();
+            if(config.isUsingRunners()) {
+                stateMachine.setState(new RecieveTrades(context), true);
+            } else {
+                stateMachine.setState(new RechargeROTE(context), false);
+            }
+        }
+
 
     }
 

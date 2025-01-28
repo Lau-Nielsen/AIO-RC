@@ -99,7 +99,7 @@ public class AIORC extends LoopedPlugin {
         this.ticks.incrementAndGet();
 
         if (isRunning() && this.stateMachine == null) {
-            setStateMachine(new StateMachine(eventBus, context));
+            setStateMachine(new StateMachine(eventBus));
             this.stateMachine.setState(new BankSetupAndStock(context), true);
             context.checkCurrentRuneBeingCrafted();
             System.out.println(context.getCurrentlyCrafting());
@@ -112,7 +112,7 @@ public class AIORC extends LoopedPlugin {
 
 
         if (context.getCurrentRunningState() == RunningState.RUNNING) {
-            this.stateMachine.handleState(this.stateMachine.getCurrentStateName());
+            this.stateMachine.handleState();
             context.setCurrentState(stateMachine.getCurrentStateName().name());
         }
 

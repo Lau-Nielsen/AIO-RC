@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.runelite.client.eventbus.EventBus;
 import net.storm.plugins.aio.rc.enums.States;
+import net.storm.plugins.aio.rc.states.BankSetupAndStock;
 import net.storm.plugins.aio.rc.states.Banking;
 
 public class StateMachine {
@@ -13,9 +14,8 @@ public class StateMachine {
     @Setter
     private static boolean hasEventBusSubscription = false;
 
-    public StateMachine(EventBus eventBus, SharedContext context) {
+    public StateMachine(EventBus eventBus) {
         this.eventBus = eventBus;
-        this.currentState = new Banking(context); // Default state
     }
 
     public void setState(StateMachineInterface newState, boolean withEventbus) {
@@ -37,7 +37,7 @@ public class StateMachine {
         return this.currentState.getStateName();
     }
 
-    public void handleState(States state) {
-        currentState.handleState(this, state);
+    public void handleState() {
+        currentState.handleState(this);
     }
 }

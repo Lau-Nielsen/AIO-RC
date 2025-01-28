@@ -24,7 +24,7 @@ public class RechargeROTE implements StateMachineInterface {
     }
 
     @Override
-    public void handleState(StateMachine stateMachine, States state) {
+    public void handleState(StateMachine stateMachine) {
         int waterID = ItemID.WATER_RUNE;
         int fireID = ItemID.FIRE_RUNE;
         int earthID = ItemID.EARTH_RUNE;

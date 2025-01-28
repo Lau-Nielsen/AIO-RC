@@ -122,7 +122,7 @@ public class WalkToAltar implements StateMachineInterface {
     }
 
     @Override
-    public void handleState(StateMachine stateMachine, States state) {
+    public void handleState(StateMachine stateMachine) {
         Altar altar = config.runes();
         boolean closeToAltar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 20, altar.getAltarID()) != null;
 
@@ -131,6 +131,7 @@ public class WalkToAltar implements StateMachineInterface {
                 stateMachine.setState(new RunnerTradePlayer(context), true);
             } else {
                 stateMachine.setState(new CraftRunes(context), true);
+                stateMachine.handleState();
             }
         }
 

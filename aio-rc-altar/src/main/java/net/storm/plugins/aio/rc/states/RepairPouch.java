@@ -27,7 +27,7 @@ public class RepairPouch implements StateMachineInterface {
     private static boolean waitingForDialog = false;
 
     @Override
-    public void handleState(StateMachine stateMachine, States state) {
+    public void handleState(StateMachine stateMachine) {
         if (Inventory.contains(26786)) {
             // TODO make sure this check is in SETUP
 

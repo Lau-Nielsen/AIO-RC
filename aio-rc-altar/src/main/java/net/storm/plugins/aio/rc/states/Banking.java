@@ -217,7 +217,7 @@ public class Banking implements StateMachineInterface {
     }
 
     @Override
-    public void handleState(StateMachine stateMachine, States state) {
+    public void handleState(StateMachine stateMachine) {
         if (!Bank.isOpen()) {
             Bank.open(config.bank().getBankLocation());
         }

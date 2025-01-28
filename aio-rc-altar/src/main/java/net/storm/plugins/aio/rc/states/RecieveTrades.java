@@ -64,7 +64,7 @@ public class RecieveTrades implements StateMachineInterface {
     }
 
     @Override
-    public void handleState(StateMachine stateMachine, States state) {
+    public void handleState(StateMachine stateMachine) {
         IPlayer player = null;
         IPlayer localPlayer = Players.getLocal();
 

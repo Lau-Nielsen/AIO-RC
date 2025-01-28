@@ -93,7 +93,7 @@ public class RunnerTradePlayer implements StateMachineInterface {
     }
 
     @Override
-    public void handleState(StateMachine stateMachine, States state) {
+    public void handleState(StateMachine stateMachine) {
         String runecrafterName = config.runecrafterName();
         int tradeEveryXTicks = config.resendTradeEvery();
         IPlayer player = Players.getNearest(runecrafterName);

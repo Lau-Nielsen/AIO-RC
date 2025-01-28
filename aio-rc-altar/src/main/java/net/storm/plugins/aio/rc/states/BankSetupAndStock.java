@@ -149,7 +149,7 @@ public class BankSetupAndStock implements StateMachineInterface {
     }
 
     @Override
-    public void handleState(StateMachine stateMachine, States state) {
+    public void handleState(StateMachine stateMachine) {
         if(!Bank.isOpen() && !checkedForLoadoutIds) {
             Bank.open(context.getConfig().bank().getBankLocation());
         }

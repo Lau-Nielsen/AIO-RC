@@ -250,7 +250,7 @@ public class Setup implements StateMachineInterface {
     }
 
     @Override
-    public void handleState(StateMachine stateMachine, States state) {
+    public void handleState(StateMachine stateMachine) {
         forceAddressErrors = false;
 
         questCheck(Quest.MOURNINGS_END_PART_II, Altar.DEATH);

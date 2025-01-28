@@ -39,7 +39,7 @@ public class UseFeroxPool implements StateMachineInterface {
     }
 
     @Override
-    public void handleState(StateMachine stateMachine, States state) {
+    public void handleState(StateMachine stateMachine) {
         boolean isFullHP = Combat.getHealthPercent() == 100;
         boolean isFullRunEnergy = Movement.getRunEnergy() == 100;
         boolean isFullPrayer = Prayers.getMissingPoints() == 0;
