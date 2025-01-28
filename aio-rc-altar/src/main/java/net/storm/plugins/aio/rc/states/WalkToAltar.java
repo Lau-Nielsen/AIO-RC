@@ -123,6 +123,7 @@ public class WalkToAltar implements StateMachineInterface {
     public void handleState(StateMachine stateMachine) {
         Altar altar = config.runes();
         boolean closeToAltar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 20, altar.getAltarID()) != null;
+        IPlayer localPlayer = Players.getLocal();
 
         if (closeToAltar) {
             if(config.isRunner()) {
@@ -130,6 +131,10 @@ public class WalkToAltar implements StateMachineInterface {
             } else {
                 stateMachine.setState(new CraftRunes(context), true);
             }
+        }
+
+        if(localPlayer.isAnimating() && localPlayer.getAnimation() == 829) {
+            localPlayer.setAnimation(-1);
         }
 
         if (!config.useAbyss()) {
@@ -145,7 +150,6 @@ public class WalkToAltar implements StateMachineInterface {
             INPC zamorakMage = NPCs.getNearest(x -> x.hasAction("Teleport"));
             ITileObject abyssalRift = TileObjects.getNearest("Abyssal Rift");
             boolean isAbyssalRiftNull = abyssalRift == null;
-            IPlayer localPlayer = Players.getLocal();
             boolean isInteractingWithCuck = false;
 
             if (localPlayer.isInteracting()) {
