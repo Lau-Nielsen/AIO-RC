@@ -350,7 +350,7 @@ public class SharedContext {
 
         double rate = (amount / elapsedTimeHours) / 1000;
 
-        DecimalFormat df = new DecimalFormat("#.00K");
+        DecimalFormat df = new DecimalFormat("#.00k");
 
         return df.format(rate);
     }

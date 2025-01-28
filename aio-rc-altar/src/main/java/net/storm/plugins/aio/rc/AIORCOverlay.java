@@ -156,19 +156,19 @@ class AIORCOverlay extends OverlayPanel
                 {
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("Exp gained:")
-                            .right(context.getExpGained().toString() +  " | " + context.calculateRatePerHour(context.getExpGained()) +"/hr")
+                            .right(context.getExpGained() / 1000 +  "k | " + context.calculateRatePerHour(context.getExpGained()) +"/hr")
                             .build());
                 }
                 {
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("Runes crafted:")
-                            .right(context.getRunesCrafted().toString() +  " | " + context.calculateRatePerHour(context.getRunesCrafted()) +"/hr")
+                            .right(context.getRunesCrafted() / 1000 +  "k | " + context.calculateRatePerHour(context.getRunesCrafted()) +"/hr")
                             .build());
                 }
                 {
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("Est. gp earned:")
-                            .right(context.getEstimatedGpEarned() +  " | " + context.calculateRatePerHour((long) context.getEstimatedGpEarned()) +"/hr")
+                            .right(context.getEstimatedGpEarned() / 1000 +  "k | " + context.calculateRatePerHour((long) context.getEstimatedGpEarned()) +"/hr")
                             .build());
                 }
             }

@@ -155,6 +155,9 @@ public class Banking implements StateMachineInterface {
 
         if(context.arePouchesFull()) {
             withdrawEssence(daeyalt, 28);
+
+            // should be valid to close the bank here, and it should save a tick
+            Bank.close();
         }
 
         context.checkTotalEssencesInInv();
@@ -241,8 +244,6 @@ public class Banking implements StateMachineInterface {
         }
 
         if(context.maxEssenceCapacity() == context.getTotalEssencesInInv()) {
-
-            Bank.close();
             if(context.checkForBrokenPouch()) {
                 stateMachine.setState(new RepairPouch(context), false);
             } else if (config.usePoolAtFerox()) {
