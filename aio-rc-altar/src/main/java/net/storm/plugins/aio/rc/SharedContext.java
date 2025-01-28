@@ -1,6 +1,5 @@
 package net.storm.plugins.aio.rc;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.Getter;
 import lombok.Setter;
@@ -162,7 +161,7 @@ public class SharedContext {
         this.chargesOnRingOfElement = Vars.getBit(13707);
     }
 
-    public void essenceInBank() {
+    public void checkEssenceInBank() {
         if(Bank.isOpen()) {
             if(config.useDaeyalt()) {
                 this.essenceInBank = Bank.getCount(true, ItemID.DAEYALT_ESSENCE);

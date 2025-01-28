@@ -173,7 +173,7 @@ public class BankSetupAndStock implements StateMachineInterface {
             }
 
             context.checkStaminaDoses();
-            context.essenceInBank();
+            context.checkEssenceInBank();
             context.checkBindingNecklacesInBank();
 
             context.setUsingGlories(context.checkForGlories());
