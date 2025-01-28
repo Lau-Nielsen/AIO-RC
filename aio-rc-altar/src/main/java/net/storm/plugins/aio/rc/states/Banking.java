@@ -153,7 +153,9 @@ public class Banking implements StateMachineInterface {
             colossal.fill();
         }
 
-        withdrawEssence(daeyalt, 28);
+        if(context.arePouchesFull()) {
+            withdrawEssence(daeyalt, 28);
+        }
 
         context.checkTotalEssencesInInv();
         context.checkEssenceInBank();
@@ -234,16 +236,12 @@ public class Banking implements StateMachineInterface {
 
 
             if(context.maxEssenceCapacity() >= context.getTotalEssencesInInv()) {
+                System.out.println("hello?");
                 bankForEssence();
             }
         }
 
         if(context.maxEssenceCapacity() == context.getTotalEssencesInInv()) {
-            if(context.getEssenceInBank() == 0) {
-                context.setCurrentRunningState(RunningState.STOPPED);
-            } else if (config.useStamina() && context.getStaminaDoses() == 0) {
-                context.setCurrentRunningState(RunningState.STOPPED);
-            }
 
             Bank.close();
             if(context.checkForBrokenPouch()) {

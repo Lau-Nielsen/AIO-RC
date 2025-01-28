@@ -109,12 +109,10 @@ public class WalkToAltar implements StateMachineInterface {
     public void enterRuins(Altar altar) {
         IPlayer localPlayer = Players.getLocal();
         if(localPlayer != null && altar.getRuinID() != null) {
-            boolean isRuinsNearby = TileObjects.getFirstSurrounding(localPlayer.getWorldArea().toWorldPoint(), 10, altar.getRuinID()) != null;
-            if(isRuinsNearby) {
-                ITileObject ruinTileObject = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 10, altar.getRuinID());
-
-                if(ruinTileObject.getId() == altar.getRuinID()) {
-                    ruinTileObject.interact("Enter");
+            ITileObject ruins = TileObjects.getFirstSurrounding(localPlayer.getWorldArea().toWorldPoint(), 20, altar.getRuinID());
+            if(ruins != null) {
+                if(ruins.getId() == altar.getRuinID()) {
+                    ruins.interact("Enter");
                     startCounting = true;
                 }
             }

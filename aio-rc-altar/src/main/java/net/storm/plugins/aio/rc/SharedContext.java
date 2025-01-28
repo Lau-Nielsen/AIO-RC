@@ -75,24 +75,23 @@ public class SharedContext {
         }
     }
 
-    public long getElapsedMilliseconds() {
+    public long getElapsedTimeSeconds() {
         if (isTimeTracking) {
-            return (totalElapsedTime + (System.currentTimeMillis() - startTime)) / 100;
+            return (totalElapsedTime + (System.currentTimeMillis() - startTime)) / 1000;
         } else {
-            return totalElapsedTime / 100;
+            return totalElapsedTime / 1000;
         }
     }
 
     public String formatTime() {
-        long totalTime = this.getElapsedMilliseconds();
+        long totalTime = this.getElapsedTimeSeconds();
 
-        long hours = totalTime / 36000;                // Calculate hours
-        long minutes = (totalTime % 36000) / 600;    // Calculate minutes
-        long seconds = (totalTime % 600) / 10;       // Calculate seconds
-        long milliseconds = totalTime % 10;           // Calculate remaining milliseconds
+        long hours = totalTime / 3600;
+        long minutes = (totalTime % 3600) / 60;
+        long seconds = (totalTime % 60);
 
         // Format as HH:MM:SS.mmm with leading zeros
-        return String.format("%02d:%02d:%02d.%01d", hours, minutes, seconds, milliseconds);
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 
     public boolean checkForDuelingRing() {
@@ -211,6 +210,36 @@ public class SharedContext {
         }
     }
 
+    public boolean arePouchesFull() {
+        EssPouch small = EssPouch.SMALL;
+        EssPouch medium = EssPouch.MEDIUM;
+        EssPouch large = EssPouch.LARGE;
+        EssPouch giant = EssPouch.GIANT;
+        EssPouch colossal = EssPouch.COLOSSAL;
+
+        if (this.isUsingSmallPouch() && small.maxAmount() != small.getAmount()) {
+            return false;
+        }
+
+        if (this.isUsingMediumPouch() && medium.maxAmount() != medium.getAmount()) {
+            return false;
+        }
+
+        if (this.isUsingLargePouch() && large.maxAmount() != large.getAmount()) {
+            return false;
+        }
+
+        if (this.isUsingGiantPouch() && giant.maxAmount() != giant.getAmount()) {
+            return false;
+        }
+
+        if (this.isUsingColossalPouch() && colossal.maxAmount() != colossal.getAmount()) {
+            return false;
+        }
+
+        return true;
+    }
+
     public int maxEssenceCapacity() {
         int capacity = 0;
         if (this.isUsingSmallPouch() ) {
@@ -305,15 +334,15 @@ public class SharedContext {
     }
 
     public String calculateRatePerHour(long amount) {
-        double elapsedTimeHours = getElapsedMilliseconds() / 36000.0;
+        double elapsedTimeHours = (double) getElapsedTimeSeconds() / 3600;
 
         if (elapsedTimeHours == 0) {
-            return "0";
+            return "0k";
         }
 
-        double rate = amount / elapsedTimeHours;
+        double rate = (amount / elapsedTimeHours) / 1000;
 
-        DecimalFormat df = new DecimalFormat("#.00");
+        DecimalFormat df = new DecimalFormat("#.00K");
 
         return df.format(rate);
     }
