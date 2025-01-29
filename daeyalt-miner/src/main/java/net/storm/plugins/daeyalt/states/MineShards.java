@@ -60,7 +60,7 @@ public class MineShards implements StateMachineInterface {
         } else if(localPlayerY == 9753) {
             points.get("south-north").stream().filter(e -> e.getX() != localPlayerX).forEach(Movement::walkTo);
         } else if(localPlayerY == 9764) {
-            points.get("south-north").stream().filter(e -> e.getX() != localPlayerX).forEach(Movement::walkTo);
+            points.get("north").stream().filter(e -> e.getX() != localPlayerX).forEach(Movement::walkTo);
         }
     }
 
