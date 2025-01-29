@@ -1,9 +1,9 @@
-package net.storm.plugins.aio.rc;
+package net.storm.plugins.daeyalt;
 
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.client.eventbus.EventBus;
-import net.storm.plugins.aio.rc.enums.States;
+import net.storm.plugins.daeyalt.enums.States;
 
 public class StateMachine {
     private StateMachineInterface currentState;
@@ -22,13 +22,7 @@ public class StateMachine {
             setHasEventBusSubscription(false);
         }
 
-        // Speed up state transitions..
-        if(this.currentState != null && this.currentState.getStateName() != States.BankSetupAndStock){
-            this.currentState = newState;
-            this.currentState.handleState(this);
-        } else {
-            this.currentState = newState;
-        }
+        this.currentState = newState;
 
         if(withEventbus) {
             eventBus.register(newState);

@@ -4,6 +4,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(
     "aio-rc-altar",
+    "daeyalt-miner",
 )
 
 for (project in rootProject.children) {

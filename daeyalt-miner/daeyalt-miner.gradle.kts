@@ -1,7 +1,7 @@
 version = "0.0.1"
 
-project.extra["PluginName"] = "AIO RC"
-project.extra["PluginDescription"] = "AIO RC Altar"
+project.extra["PluginName"] = "Daeyalt miner"
+project.extra["PluginDescription"] = "Daeyalt miner"
 
 tasks {
     jar {
