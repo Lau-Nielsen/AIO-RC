@@ -5,6 +5,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include(
     "aio-rc-altar",
     "daeyalt-miner",
+    "glory-recharger",
 )
 
 for (project in rootProject.children) {
