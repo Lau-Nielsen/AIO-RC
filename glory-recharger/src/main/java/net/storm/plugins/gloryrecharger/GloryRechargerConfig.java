@@ -3,17 +3,34 @@ package net.storm.plugins.gloryrecharger;
 
 import net.storm.api.plugins.SoxExclude;
 import net.storm.api.plugins.config.*;
+import net.storm.plugins.gloryrecharger.enums.BankTransportation;
 import net.storm.plugins.gloryrecharger.enums.Banks;
+import net.storm.plugins.gloryrecharger.enums.FountainTransportation;
 
 @ConfigGroup(GloryRechargerConfig.GROUP)
 @SoxExclude // Exclude from obfuscation
 public interface GloryRechargerConfig extends Config {
     String GROUP = "Glory Recharger";
 
+    @ConfigSection(
+            name = "Banking",
+            description = "Banking config",
+            position = 10
+    )
+    String bankingConfig = "bankingConfig";
+
+    @ConfigSection(
+            name = "Transporting",
+            description = "How you get from a to b.",
+            position = 20
+    )
+    String transportConfig = "transportConfig";
+
     @ConfigItem(
             keyName = "bank",
             name = "Bank location",
             position = 0,
+            section = bankingConfig,
             description = "Where do you want to bank?"
     )
     default Banks bank() {
@@ -28,6 +45,7 @@ public interface GloryRechargerConfig extends Config {
             keyName = "gloriesToBring",
             name = "Amount of Glories",
             position = 1,
+            section = bankingConfig,
             description = "The number of glories on each trip."
     )
     default int gloriesToBring()
@@ -39,6 +57,7 @@ public interface GloryRechargerConfig extends Config {
             keyName = "useStamina",
             name = "Using staminas?",
             position = 53,
+            section = bankingConfig,
             description = "Do want to use stamina potions?"
     )
     default boolean useStamina() {
@@ -53,6 +72,7 @@ public interface GloryRechargerConfig extends Config {
             name = "When to use stamina",
             position = 54,
             description = "Run energy threshold required to drink a stamina dose.",
+            section = bankingConfig,
             hidden = true,
             unhide = "useStamina"
     )
@@ -64,21 +84,11 @@ public interface GloryRechargerConfig extends Config {
     @ConfigItem(
             keyName = "useFeroxPool",
             name = "Use the pool at ferox",
+            section = bankingConfig,
             position = 1,
             description = "Use the pool at Ferox after banking."
     )
     default boolean useFeroxPool()
-    {
-        return false;
-    }
-
-    @ConfigItem(
-            keyName = "suicide",
-            name = "Suicide",
-            position = 1,
-            description = "This will suicide at rouges castle"
-    )
-    default boolean suicide()
     {
         return false;
     }
@@ -106,14 +116,25 @@ public interface GloryRechargerConfig extends Config {
     }
 
     @ConfigItem(
-            keyName = "useObelisk",
-            name = "Use Obelisks",
-            position = 1,
-            description = "Use the obelisks for transportation."
+            keyName = "fountainTransport",
+            name = "Path to Fountain",
+            position = 0,
+            section = transportConfig,
+            description = "How do you want to get to the fountain of rune?"
     )
-    default boolean useObelisk()
-    {
-        return false;
+    default FountainTransportation fountainTransport() {
+        return FountainTransportation.OBELISK;
+    }
+
+    @ConfigItem(
+            keyName = "bankTransport",
+            name = "Path to Bank",
+            position = 0,
+            section = transportConfig,
+            description = "How do you want to get to the bank?"
+    )
+    default BankTransportation bankTransportation() {
+        return BankTransportation.OBELISK;
     }
 
     @ConfigItem(

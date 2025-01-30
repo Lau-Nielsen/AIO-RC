@@ -3,14 +3,21 @@ package net.storm.plugins.gloryrecharger;
 import com.google.inject.Singleton;
 import lombok.Getter;
 import lombok.Setter;
+import net.runelite.api.Prayer;
 import net.runelite.api.WorldType;
+import net.runelite.api.coords.WorldArea;
 import net.runelite.api.widgets.ComponentID;
 import net.storm.api.domain.actors.IPlayer;
+import net.storm.api.domain.tiles.ITileObject;
 import net.storm.api.entities.IPlayers;
 import net.storm.plugins.gloryrecharger.enums.RunningState;
 import net.storm.sdk.entities.Players;
+import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.Game;
 import net.storm.sdk.game.Worlds;
+import net.storm.sdk.input.Keyboard;
+import net.storm.sdk.movement.Movement;
+import net.storm.sdk.widgets.Prayers;
 import net.storm.sdk.widgets.Widgets;
 
 import java.text.DecimalFormat;
@@ -30,7 +37,8 @@ public class SharedContext {
     Set<WorldType> excludedWorldTypes = EnumSet.of(
             WorldType.LEGACY_ONLY, WorldType.HIGH_RISK, WorldType.BETA_WORLD,
             WorldType.DEADMAN, WorldType.BOUNTY, WorldType.FRESH_START_WORLD,
-            WorldType.PVP_ARENA, WorldType.PVP, WorldType.SKILL_TOTAL, WorldType.TOURNAMENT_WORLD
+            WorldType.PVP_ARENA, WorldType.PVP, WorldType.SKILL_TOTAL, WorldType.TOURNAMENT_WORLD,
+            WorldType.QUEST_SPEEDRUNNING
     );
 
     private long startTime;
@@ -80,12 +88,12 @@ public class SharedContext {
         double elapsedTimeHours = (double) getElapsedTimeSeconds() / 3600;
 
         if (elapsedTimeHours == 0) {
-            return "0k";
+            return "0";
         }
 
-        double rate = (amount / elapsedTimeHours) / 1000;
+        double rate = (amount / elapsedTimeHours) ;
 
-        DecimalFormat df = new DecimalFormat("#.00k");
+        DecimalFormat df = new DecimalFormat("#");
 
         return df.format(rate);
     }
@@ -110,6 +118,7 @@ public class SharedContext {
         Matcher matcher = pattern.matcher(input);
 
         if (matcher.find()) {
+            System.out.println(Integer.parseInt(matcher.group(1)));
             return Integer.parseInt(matcher.group(1));
         }
         return 0;
@@ -122,13 +131,74 @@ public class SharedContext {
 
         if(Game.isInWilderness() && config.hopOnAttackablePlayer()) {
             List<IPlayer> players = Players.getAll(p -> p.getId() != Players.getLocal().getId());
+            int radius = wildyLevel() < 20 ? 10 : 20;
 
             for (IPlayer player : players) {
-                if (canAttackMe(player) && player.distanceTo(Players.getLocal().getWorldArea().toWorldPoint()) < 20) {
+                if (canAttackMe(player) && player.distanceTo(Players.getLocal().getWorldArea().toWorldPoint()) < radius) {
                     Worlds.hopTo(Worlds.getRandom(w -> w.getLocation() == Worlds.getCurrent().getLocation() && w.getTypes().contains(WorldType.MEMBERS) &&
                             w.getTypes().stream().noneMatch(this.excludedWorldTypes::contains)));
                 }
             }
+        }
+    }
+
+    public WorldArea calculateMiddleOfObelisk() {
+        int sumX = 0;
+        int sumY = 0;
+        List<ITileObject> obelisk = TileObjects.getAll(o -> o.getName() != null && (o.getId() == 14825 || o.getName().equals("Obelisk")));
+
+        for (ITileObject o : obelisk) {
+            sumX += o.getWorldX();
+            sumY += o.getWorldY();
+        }
+
+        return new WorldArea(sumX / 4, sumY / 4, 1, 1, 0);
+    }
+
+    public void handleProtectItem() {
+        if(Game.isInWilderness()) {
+            List<IPlayer> players = Players.getAll(p -> p.getId() != Players.getLocal().getId());
+            IPlayer me = Players.getLocal();
+
+            for (IPlayer player : players) {
+                if (player.isInteracting() && player.getInteracting().getId() == me.getId() && Prayers.canUse(Prayer.PROTECT_ITEM)) {
+                    Prayers.toggle(Prayer.PROTECT_ITEM);
+                }
+            }
+        } else if (Prayers.isEnabled(Prayer.PROTECT_ITEM)) {
+            Prayers.toggle(Prayer.PROTECT_ITEM);
+        }
+    }
+
+    public void teleportToDestination() {
+        IPlayer localPlayer = Players.getLocal();
+        ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
+        if (TileObjects.getNearest(14825) == null) {
+            obelisk.interact("Teleport to Destination");
+        } else {
+            Movement.walkTo(calculateMiddleOfObelisk());
+        }
+    }
+
+    public void setDestinationToFerox() {
+        IPlayer localPlayer = Players.getLocal();
+        ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
+
+        if (Widgets.isVisible(12255235)) {
+            Keyboard.type(1);
+        } else {
+            obelisk.interact("Set Destination");
+        }
+    }
+
+    public void setDestinationToRogues() {
+        IPlayer localPlayer = Players.getLocal();
+        ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
+
+        if (Widgets.isVisible(12255235)) {
+            Keyboard.type(6);
+        } else {
+            obelisk.interact("Set Destination");
         }
     }
 }

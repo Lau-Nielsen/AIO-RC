@@ -44,7 +44,7 @@ public class UseFeroxPool implements StateMachineInterface {
         boolean isFullRunEnergy = Movement.getRunEnergy() == 100;
         boolean isFullPrayer = Prayers.getMissingPoints() == 0;
 
-        if (config.useFeroxPool()) {
+        if (config.useFeroxPool() && !isFullHP && !isFullRunEnergy && !isFullPrayer) {
             if(Bank.isOpen()) {
                 Bank.close();
             }
@@ -67,6 +67,8 @@ public class UseFeroxPool implements StateMachineInterface {
                     stateMachine.setState(new WalkToFountain(context), true);
                 }
             }
+        } else {
+            stateMachine.setState(new WalkToFountain(context), true);
         }
     }
 

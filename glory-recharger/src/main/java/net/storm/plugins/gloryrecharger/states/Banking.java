@@ -1,6 +1,5 @@
 package net.storm.plugins.gloryrecharger.states;
 
-import com.google.inject.spi.Message;
 import net.runelite.api.ItemID;
 import net.runelite.api.Varbits;
 import net.runelite.api.coords.WorldArea;
@@ -10,22 +9,17 @@ import net.storm.plugins.gloryrecharger.GloryRechargerConfig;
 import net.storm.plugins.gloryrecharger.SharedContext;
 import net.storm.plugins.gloryrecharger.StateMachine;
 import net.storm.plugins.gloryrecharger.StateMachineInterface;
-import net.storm.plugins.gloryrecharger.enums.Banks;
-import net.storm.plugins.gloryrecharger.enums.RunningState;
-import net.storm.plugins.gloryrecharger.enums.States;
+import net.storm.plugins.gloryrecharger.enums.*;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.Game;
 import net.storm.sdk.game.Vars;
-import net.storm.sdk.input.Keyboard;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Inventory;
 import net.storm.sdk.movement.Movement;
 import net.storm.sdk.utils.MessageUtils;
-import net.storm.sdk.widgets.Widgets;
 
 import java.awt.*;
-import java.util.List;
 
 public class Banking implements StateMachineInterface {
     SharedContext context;
@@ -36,67 +30,23 @@ public class Banking implements StateMachineInterface {
         this.config = context.getConfig();
     }
 
-    private WorldArea calculateMiddleOfObelisk() {
-        int sumX = 0;
-        int sumY = 0;
-        List<ITileObject> obelisk = TileObjects.getAll(o -> o.getName() != null && (o.getId() == 14825 || o.getName().equals("Obelisk")));
-
-        for (ITileObject o : obelisk) {
-            sumX += o.getWorldX();
-            sumY += o.getWorldY();
-        }
-
-        System.out.println(obelisk.size());
-        System.out.println(sumX / 4 + " " + sumY / 4);
-
-        return new WorldArea(sumX / 4, sumY / 4, 1, 1, 0);
-    }
-
-    private void teleportToDestination() {
-        IPlayer localPlayer = Players.getLocal();
-        ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
-        if (TileObjects.getNearest(14825) == null) {
-            obelisk.interact("Teleport to Destination");
-        } else {
-            Movement.walkTo(calculateMiddleOfObelisk());
-        }
-    }
-
-    private void setDestination() {
-        IPlayer localPlayer = Players.getLocal();
-        ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
-
-        if (Widgets.isVisible(12255235)) {
-            Keyboard.type(1);
-        } else {
-            obelisk.interact("Set Destination");
-        }
-    }
-
     private void obeliskHomeRoute() {
         WorldArea rougesCastle = new WorldArea(3305, 3915, 3, 3, 0);
         IPlayer localPlayer = Players.getLocal();
+
         ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
 
-        if(!Movement.isWalking() && obelisk == null && TileObjects.getNearest(14825) == null) {
+        if(!Movement.isWalking() && obelisk == null && TileObjects.getNearest(14825) == null && context.wildyLevel() > 20) {
             Movement.walkTo(rougesCastle);
         }
 
         if(obelisk != null || TileObjects.getNearest(14825) != null && !localPlayer.isAnimating()) {
             if (Vars.getBit(Varbits.DIARY_WILDERNESS_HARD) == 1) {
                 if (context.wildyLevel() >= 20) {
-                    if (config.bank() == Banks.FEROX_ENCLAVE_BANK || Vars.getBit(4966) == 0) {
-                        if(Vars.getBit(4966) == 4 || Vars.getBit(4966) == 5) {
-                            teleportToDestination();
-                        } else {
-                            setDestination();
-                        }
+                    if (Vars.getBit(4966) != 4) {
+                        context.setDestinationToFerox();
                     } else {
-                        if (Vars.getBit(4966) != 4) {
-                            setDestination();
-                        } else {
-                            teleportToDestination();
-                        }
+                        context.teleportToDestination();
                     }
                 } else {
                     Bank.open(config.bank().getBankLocation());
@@ -106,7 +56,7 @@ public class Banking implements StateMachineInterface {
                     if (TileObjects.getNearest(14825) == null) {
                         obelisk.interact("Activate");
                     } else {
-                        Movement.walkTo(calculateMiddleOfObelisk());
+                        Movement.walkTo(context.calculateMiddleOfObelisk());
                     }
                 } else {
                     Bank.open(config.bank().getBankLocation());
@@ -146,9 +96,10 @@ public class Banking implements StateMachineInterface {
     @Override
     public void handleState(StateMachine stateMachine) {
         context.hopCheck();
+        context.handleProtectItem();
 
         if(!Bank.isOpen() && !Movement.isWalking()) {
-            if(config.useObelisk() && Game.isInWilderness()) {
+            if(config.bankTransportation() == BankTransportation.OBELISK && Game.isInWilderness()) {
                 obeliskHomeRoute();
             } else {
                 Bank.open(context.getConfig().bank().getBankLocation());
@@ -176,8 +127,21 @@ public class Banking implements StateMachineInterface {
 
             withdrawAndDrinkStamina();
 
+            if(config.fountainTransport() == FountainTransportation.ANNAKARL_TP &&
+                    Inventory.getCount(true, ItemID.LAW_RUNE) < 2 && Inventory.getCount(true, ItemID.BLOOD_RUNE) < 2) {
+                Bank.withdraw(ItemID.LAW_RUNE,1);
+                Bank.withdraw(ItemID.LAW_RUNE,1);
+                Bank.withdraw(ItemID.BLOOD_RUNE,1);
+                Bank.withdraw(ItemID.BLOOD_RUNE,1);
+            }
+
+            if(config.fountainTransport() == FountainTransportation.ANNAKARL_TABLET && !Inventory.contains(ItemID.ANNAKARL_TELEPORT)) {
+                Bank.withdraw(ItemID.ANNAKARL_TELEPORT,1);
+            }
+
             if (!Bank.contains(ItemID.AMULET_OF_GLORY)) {
                 MessageUtils.addMessage("Out of glories, stopping plugin", Color.red);
+                context.setCurrentRunningState(RunningState.STOPPED);
             }
         }
 
