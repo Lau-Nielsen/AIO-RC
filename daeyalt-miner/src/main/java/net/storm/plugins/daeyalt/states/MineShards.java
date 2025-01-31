@@ -31,6 +31,8 @@ public class MineShards implements StateMachineInterface {
 
     AtomicInteger ticks = new AtomicInteger(0);
 
+    private final int daeyaltRockID = 39095;
+
     @Subscribe
     private void onGameTick(final GameTick event) {
         this.ticks.getAndIncrement();
@@ -53,6 +55,8 @@ public class MineShards implements StateMachineInterface {
         int localPlayerX = Players.getLocal().getWorldArea().getX();
         int localPlayerY = Players.getLocal().getWorldArea().getY();
 
+        // Checking for a specific x or y value that is unique to the four locations you can end up in while mining daeyalt.
+        // Could probably be better, but this is also kinda verbose.
         if(localPlayerX == 3686) {
             points.get("east").stream().filter(e -> e.getY() != localPlayerY).forEach(Movement::walkTo);
         } else if(localPlayerX == 3674) {
@@ -65,7 +69,7 @@ public class MineShards implements StateMachineInterface {
     }
 
     private void tickManip(){
-        ITileObject mineablePillar = TileObjects.getNearest(o -> o.getId() == 39095 && o.hasAction("Mine"));
+        ITileObject mineablePillar = TileObjects.getNearest(o -> o.getId() == daeyaltRockID && o.hasAction("Mine"));
         if(this.ticks.get() % 3 == 0) {
             Inventory.getFirst(ItemID.GUAM_LEAF, ItemID.MARRENTILL, ItemID.HARRALANDER)
                     .useOn(Inventory.getFirst(ItemID.SWAMP_TAR));
@@ -77,7 +81,7 @@ public class MineShards implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine) {
-        ITileObject mineablePillar = TileObjects.getNearest(o -> o.getId() == 39095 && o.hasAction("Mine"));
+        ITileObject mineablePillar = TileObjects.getNearest(o -> o.getId() == daeyaltRockID && o.hasAction("Mine"));
         boolean aloneQuestionMark = Players.getAll().size() == 1;
         IPlayer localPlayer = Players.getLocal();
 

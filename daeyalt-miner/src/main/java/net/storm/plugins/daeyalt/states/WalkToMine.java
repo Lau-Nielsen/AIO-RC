@@ -22,7 +22,9 @@ public class WalkToMine implements StateMachineInterface {
     public void handleState(StateMachine stateMachine) {
         IPlayer localPlayer = Players.getLocal();
         WorldArea mineLocation = new WorldArea(3686, 9757,1,1,2);
-        ITileObject mineablePillar = TileObjects.getNearest(o -> o.getId() == 39095 && o.hasAction("Mine"));
+        final int daeyaltRockID = 39095;
+
+        ITileObject mineablePillar = TileObjects.getNearest(o -> o.getId() == daeyaltRockID && o.hasAction("Mine"));
 
         if(localPlayer.getWorldArea().getX() == mineLocation.getX() &&
                 localPlayer.getWorldArea().getY() == mineLocation.getY() || mineablePillar != null) {
