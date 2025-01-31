@@ -37,7 +37,7 @@ class GloryRechargerOverlay extends OverlayPanel
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("Time elapsed:")
-                        .right(context.formatTime())
+                        .right(context.getTrackingUtils().formatTime())
                         .build());
             }
             {
@@ -52,7 +52,7 @@ class GloryRechargerOverlay extends OverlayPanel
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("Glories charged:")
-                        .right(context.getGloriesCharged() +  " | " + context.calculateRatePerHour(context.getGloriesCharged()) +"/hr")
+                        .right(context.getTrackingUtils().getTotalAmountAndRate(context.getGloriesCharged()))
                         .build());
             }
             if(config.showStock()) {

@@ -5,6 +5,8 @@ import net.runelite.api.Varbits;
 import net.runelite.api.coords.WorldArea;
 import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
+import net.storm.plugins.commons.enums.RunningState;
+import net.storm.plugins.commons.utils.BankUtils;
 import net.storm.plugins.gloryrecharger.GloryRechargerConfig;
 import net.storm.plugins.gloryrecharger.SharedContext;
 import net.storm.plugins.gloryrecharger.StateMachine;
@@ -31,6 +33,8 @@ public class Banking implements StateMachineInterface {
         this.config = context.getConfig();
     }
 
+    BankUtils bankUtils = new BankUtils();
+
     private void obeliskHomeRoute() {
         WorldArea rougesCastle = new WorldArea(3305, 3915, 3, 3, 0);
         IPlayer localPlayer = Players.getLocal();
@@ -41,9 +45,10 @@ public class Banking implements StateMachineInterface {
 
         if(!Movement.isWalking() && obelisk == null && TileObjects.getNearest(animatingObeliskID) == null && context.wildyLevel() > 20) {
             Movement.walkTo(rougesCastle);
+            return;
         }
 
-        if(obelisk != null || TileObjects.getNearest(animatingObeliskID) != null && !localPlayer.isAnimating()) {
+        if((obelisk != null || TileObjects.getNearest(animatingObeliskID) != null) && !localPlayer.isAnimating()) {
             if (Vars.getBit(Varbits.DIARY_WILDERNESS_HARD) == 1) {
                 if (context.wildyLevel() >= 20) {
                     if (Vars.getBit(obeliskDestinationVarbit) != Obelisk.FEROX_SE.getVarbitValue()) {
@@ -97,29 +102,15 @@ public class Banking implements StateMachineInterface {
     }
 
     private void withdrawAndDrinkStamina(StateMachine statemachine) {
-        int stam_1 = ItemID.STAMINA_POTION1;
-        int stam_2 = ItemID.STAMINA_POTION2;
-        int stam_3 = ItemID.STAMINA_POTION3;
-        int stam_4 = ItemID.STAMINA_POTION4;
-
-
         if(config.useStamina()) {
-            if (Bank.contains(stam_1, stam_2, stam_3, stam_4)) {
-                if(Movement.getRunEnergy() <= config.staminaThreshold() &&
-                        !Movement.isStaminaBoosted() &&
-                        Bank.isOpen() &&
-                        !Bank.Inventory.contains(stam_1, stam_2, stam_3, stam_4)) {
-                    Bank.withdraw(ItemID.STAMINA_POTION1, 1);
-                }
+            if(Movement.getRunEnergy() <= config.staminaThreshold() && !Movement.isStaminaBoosted()) {
+                bankUtils.withdrawAndDrinkStamina();
+            }
+            bankUtils.depositStamina();
 
-                if(Bank.Inventory.contains(stam_1, stam_2, stam_3, stam_4) && !Movement.isStaminaBoosted()) {
-                    Bank.Inventory.getFirst(stam_1, stam_2, stam_3, stam_4).interact("Drink");
-                } else if (Movement.isStaminaBoosted() && Bank.Inventory.contains(stam_1, stam_2, stam_3, stam_4)) {
-                    Bank.depositAll(stam_1, stam_2, stam_3, stam_4);
-                }
-            } else if(config.restockStaminas()) {
+            if(config.restockStaminas() && !Bank.contains(i -> i.getName() != null && i.getName().contains("Stamina potion"))) {
                 withdrawGETransportItem();
-                statemachine.setState(new GERestock(context, stam_1), false);
+                statemachine.setState(new GERestock(context, ItemID.STAMINA_POTION1), false);
             } else {
                 context.setCurrentRunningState(RunningState.STOPPED);
                 MessageUtils.addMessage("Out of staminas, stopping plugin", Color.red);
@@ -134,21 +125,13 @@ public class Banking implements StateMachineInterface {
                 context.setCurrentRunningState(RunningState.STOPPED);
             }
 
-            if(Bank.Inventory.contains(ItemID.WILDERNESS_SWORD_4)) {
-                Bank.Inventory.getFirst(ItemID.WILDERNESS_SWORD_4).interact("Wield");
-            } else {
-                Bank.withdraw(ItemID.WILDERNESS_SWORD_4, 1);
-            }
+            bankUtils.withdrawAndEquip(ItemID.WILDERNESS_SWORD_4);
         }
     }
 
     private void withdrawAndEquipCraftingCape() {
         if(config.bank() == Banks.CRAFTING_GUILD && !Equipment.contains(ItemID.CRAFTING_CAPE, ItemID.CRAFTING_CAPET)) {
-            if(Bank.Inventory.contains(ItemID.CRAFTING_CAPE, ItemID.CRAFTING_CAPET)) {
-                Bank.Inventory.getFirst(ItemID.CRAFTING_CAPE, ItemID.CRAFTING_CAPET).interact("Wear");
-            } else {
-                Bank.withdraw(e -> e.getName() != null &&  e.getName().contains("Crafting cape"), 1);
-            }
+            bankUtils.withdrawAndEquip(e -> e.getName() != null &&  e.getName().contains("Crafting cape"));
         }
     }
 
@@ -187,7 +170,7 @@ public class Banking implements StateMachineInterface {
             Bank.depositAll(ItemID.AMULET_OF_GLORY);
         }
 
-        if (!Bank.contains(ItemID.AMULET_OF_GLORY) || Bank.getCount(true, ItemID.AMULET_OF_GLORY) < context.getConfig().gloriesToBring()) {
+        if (!Bank.contains(ItemID.AMULET_OF_GLORY) || (Bank.getCount(true, ItemID.AMULET_OF_GLORY) + Bank.Inventory.getCount(false, ItemID.AMULET_OF_GLORY)) < context.getConfig().gloriesToBring()) {
             if(config.restockGlories()) {
                 withdrawGETransportItem();
                 stateMachine.setState(new GESell(context), false);
@@ -218,31 +201,18 @@ public class Banking implements StateMachineInterface {
         }
 
         if(Bank.isOpen()) {
-            if (Bank.isNotedWithdrawMode()) {
-                Bank.setWithdrawMode(false);
-            }
+            bankUtils.setNotedWithdrawMode(false);
 
             if(config.stopOnEternal() && Inventory.contains(ItemID.AMULET_OF_ETERNAL_GLORY)) {
                 context.setCurrentRunningState(RunningState.STOPPED);
-            } else {
-                Bank.depositAll(ItemID.AMULET_OF_ETERNAL_GLORY);
             }
 
-            if(Bank.Inventory.contains(ItemID.AMULET_OF_GLORY5)) {
-                Bank.depositAll(ItemID.AMULET_OF_GLORY5);
-            }
+            bankUtils.depositAll(ItemID.AMULET_OF_ETERNAL_GLORY);
+            bankUtils.depositAll(ItemID.AMULET_OF_GLORY5);
+            bankUtils.depositAll(ItemID.AMULET_OF_GLORY6);
 
-            if(Bank.Inventory.contains(i -> i.getName() != null && i.getName().contains("Ring of wealth"))) {
-                Bank.depositAll(i -> i.getName() != null && i.getName().contains("Ring of wealth"));
-            }
-
-            if(Bank.Inventory.contains(i -> i.getName() != null && i.getName().contains("Ring of dueling"))) {
-                Bank.depositAll(i -> i.getName() != null && i.getName().contains("Ring of dueling"));
-            }
-
-            if(Bank.Inventory.contains(ItemID.AMULET_OF_GLORY6)) {
-                Bank.depositAll(ItemID.AMULET_OF_GLORY6);
-            }
+            bankUtils.depositAll(i -> i.getName() != null && i.getName().contains("Ring of wealth"));
+            bankUtils.depositAll(i -> i.getName() != null && i.getName().contains("Ring of dueling"));
 
             withdrawAndDrinkStamina(stateMachine);
 

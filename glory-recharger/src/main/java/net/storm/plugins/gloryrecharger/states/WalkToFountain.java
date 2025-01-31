@@ -3,11 +3,13 @@ package net.storm.plugins.gloryrecharger.states;
 import net.runelite.api.ItemID;
 import net.runelite.api.Varbits;
 import net.runelite.api.coords.WorldArea;
+import net.runelite.api.events.GameTick;
 import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.api.events.InventoryChanged;
 import net.storm.api.events.PlayerSpawned;
+import net.storm.api.magic.SpellBook;
 import net.storm.plugins.gloryrecharger.GloryRechargerConfig;
 import net.storm.plugins.gloryrecharger.SharedContext;
 import net.storm.plugins.gloryrecharger.StateMachine;
@@ -20,12 +22,17 @@ import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.Vars;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
+import net.storm.sdk.magic.Magic;
 import net.storm.sdk.movement.Movement;
 import net.storm.sdk.widgets.Dialog;
+
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class WalkToFountain implements StateMachineInterface {
     SharedContext context;
     GloryRechargerConfig config;
+    AtomicInteger ticks = new AtomicInteger(0);
     boolean ObeliskCompleteFlag = false;
     private final int fountainOfRuneID = 26782;
 
@@ -41,7 +48,14 @@ public class WalkToFountain implements StateMachineInterface {
         }
     }
 
+    @Subscribe
+    private void onGameTick(final GameTick event) {
+        ticks.incrementAndGet();
+    }
+
     private void obeliskFountainRoute() {
+        if(config.fountainTransport() != FountainTransportation.OBELISK && this.ObeliskCompleteFlag) return;
+
         WorldArea feroxObelisk = new WorldArea(3155, 3619, 3, 3, 0);
         IPlayer localPlayer = Players.getLocal();
         ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
@@ -50,9 +64,10 @@ public class WalkToFountain implements StateMachineInterface {
 
         if(!Movement.isWalking() && obelisk == null && TileObjects.getNearest(animatingObeliskID) == null) {
             Movement.walkTo(feroxObelisk);
+            return;
         }
 
-        if(obelisk != null || TileObjects.getNearest(animatingObeliskID) != null && !localPlayer.isAnimating() && context.wildyLevel() < 50) {
+        if((obelisk != null || TileObjects.getNearest(animatingObeliskID) != null) && !localPlayer.isAnimating() && context.wildyLevel() < 50) {
             if (Vars.getBit(Varbits.DIARY_WILDERNESS_HARD) == 1) {
                 if (Vars.getBit(obeliskDestinationVarbit) != Obelisk.ROUGES_CASTE.getVarbitValue()) {
                     context.setDestinationToRogues();
@@ -69,10 +84,66 @@ public class WalkToFountain implements StateMachineInterface {
         }
     }
 
+    private void wildernessSwordRoute() {
+        if(config.fountainTransport() != FountainTransportation.WILDERNESS_SWORD) return;
+        IPlayer localPlayer = Players.getLocal();
+
+        if (Dialog.isOpen()) {
+            Dialog.chooseOption("Yes");
+            return;
+        }
+
+        if (Equipment.contains(ItemID.WILDERNESS_SWORD_4) && !Dialog.isOpen() && !localPlayer.isAnimating()){
+            Equipment.getFirst(ItemID.WILDERNESS_SWORD_4).interact("Teleport");
+        }
+
+    }
+
+    private void walkerRoute() {
+        Set<FountainTransportation> validTransports = Set.of(
+                FountainTransportation.WALKER,
+                FountainTransportation.ANNAKARL_TP,
+                FountainTransportation.ANNAKARL_TABLET
+        );
+
+        if (!validTransports.contains(config.fountainTransport())) return;
+
+        if (Dialog.isOpen()) {
+            Dialog.chooseOption("Yes");
+            return;
+        }
+
+        if(context.wildyLevel() < 20) {
+            if(config.fountainTransport() == FountainTransportation.ANNAKARL_TP) {
+                if (SpellBook.Ancient.ANNAKARL_TELEPORT.canCast()) {
+                    SpellBook.Ancient.ANNAKARL_TELEPORT.cast();
+                    return;
+                }
+            }
+
+            if(config.fountainTransport() == FountainTransportation.ANNAKARL_TABLET) {
+                if (Inventory.contains(ItemID.ANNAKARL_TELEPORT)) {
+                    Inventory.getFirst(ItemID.ANNAKARL_TELEPORT).interact("Break");
+                    return;
+                }
+            }
+        }
+
+        IPlayer localPlayer = Players.getLocal();
+
+        if (localPlayer.isAnimating()) {
+            return;
+        }
+
+        WorldArea fountainOfRuneLocation = new WorldArea(3372, 3890, 4, 4, 0);
+        if (!Movement.isWalking() && !localPlayer.getWorldArea().intersectsWith(fountainOfRuneLocation)) {
+            Movement.walkTo(fountainOfRuneLocation);
+        }
+    }
+
     @Override
     public void handleState(StateMachine stateMachine) {
         IPlayer localPlayer = Players.getLocal();
-        WorldArea fountainOfRuneLocation = new WorldArea(3372, 3890, 6, 6, 0);
         ITileObject fountainOfRune = TileObjects.getNearest(o -> o.getId() == fountainOfRuneID);
 
         context.hopCheck();
@@ -83,21 +154,17 @@ public class WalkToFountain implements StateMachineInterface {
         }
 
         if(Inventory.contains(ItemID.AMULET_OF_GLORY)) {
-            if(fountainOfRune != null && fountainOfRune.distanceTo(localPlayer.getWorldArea().toWorldPoint()) < 15) {
+            if(fountainOfRune != null && fountainOfRune.distanceTo(localPlayer.getWorldArea().toWorldPoint()) < 10) {
                 if(Inventory.contains(ItemID.AMULET_OF_GLORY)) {
-                    Inventory.getFirst(ItemID.AMULET_OF_GLORY).useOn(fountainOfRune);
+                    if(ticks.get() % 5 == 0) {
+                        Inventory.getFirst(ItemID.AMULET_OF_GLORY).useOn(fountainOfRune);
+                        ticks.set(0);
+                    }
                 }
-            } else if (Equipment.contains(ItemID.WILDERNESS_SWORD_4) && !Dialog.isOpen() && !localPlayer.isAnimating() &&
-                    config.fountainTransport() == FountainTransportation.WILDERNESS_SWORD){
-                Equipment.getFirst(ItemID.WILDERNESS_SWORD_4).interact("Teleport");
-            } else if(config.fountainTransport() == FountainTransportation.OBELISK && !this.ObeliskCompleteFlag) {
+            } else {
+                wildernessSwordRoute();
                 obeliskFountainRoute();
-            } else if (!Movement.isWalking() && !localPlayer.getWorldArea().intersectsWith(fountainOfRuneLocation)) {
-                Movement.walkTo(fountainOfRuneLocation);
-            }
-
-            if (Dialog.isOpen()) {
-                Dialog.chooseOption("Yes");
+                walkerRoute();
             }
         } else {
             stateMachine.setState(new Banking(context), true);

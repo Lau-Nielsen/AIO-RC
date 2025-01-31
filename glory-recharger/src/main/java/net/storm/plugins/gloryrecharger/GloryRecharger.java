@@ -12,7 +12,8 @@ import net.storm.api.events.ConfigButtonClicked;
 import net.storm.api.events.ConfigChanged;
 import net.storm.api.plugins.PluginDescriptor;
 import net.storm.api.plugins.config.ConfigManager;
-import net.storm.plugins.gloryrecharger.enums.RunningState;
+import net.storm.plugins.commons.enums.RunningState;
+import net.storm.plugins.commons.utils.TrackingUtils;
 import net.storm.plugins.gloryrecharger.enums.States;
 import net.storm.plugins.gloryrecharger.states.Setup;
 import net.storm.sdk.plugins.LoopedPlugin;
@@ -54,11 +55,11 @@ public class GloryRecharger extends LoopedPlugin {
     public void onConfigButtonClicked(ConfigButtonClicked buttonClicked) {
         if (buttonClicked.getKey().equals("startPlugin")) {
             if (RunningState.RUNNING.equals(context.getCurrentRunningState())) {
-                context.pause();
+                context.getTrackingUtils().pause();
                 context.setCurrentRunningState(RunningState.STOPPED);
             } else {
                 context.setCurrentRunningState(RunningState.RUNNING);
-                context.start();
+                context.getTrackingUtils().start();
                 if(stateMachine != null && stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
                     stateMachine.setState(new Setup(context), false);
                 }

@@ -1,11 +1,7 @@
 version = "0.0.1"
 
-project.extra["PluginName"] = "Glory Recharger"
-project.extra["PluginDescription"] = "Glory Recharger"
-
-dependencies {
-    compileOnly(project(":commons"))
-}
+project.extra["PluginName"] = "Commons"
+project.extra["PluginDescription"] = "Commons api"
 
 tasks {
     jar {
@@ -20,16 +16,5 @@ tasks {
                 )
             )
         }
-    }
-
-    val copyJavaClasses by creating(Copy::class) {
-        dependsOn(":commons:compileJava")
-        from("${project(":commons").buildDir}/classes/java/main")
-        into("$buildDir/classes/java/main")
-        include("**/*.class")
-    }
-
-    named("compileJava") {
-        dependsOn(copyJavaClasses)
     }
 }

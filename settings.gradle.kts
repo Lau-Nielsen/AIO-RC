@@ -3,6 +3,7 @@ rootProject.name = "storm2-example-plugin"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(
+    "commons",
     "aio-rc-altar",
     "daeyalt-miner",
     "glory-recharger",

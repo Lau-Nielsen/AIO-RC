@@ -34,8 +34,6 @@ public class GESell implements StateMachineInterface {
         List<GrandExchangeOffer> offers = GrandExchange.getOffers();
         int price = (int) Math.floor(Static.getItemManager().getItemPrice(ItemID.AMULET_OF_GLORY6) * ((double) config.sellMultiplier() / 100));
 
-
-
         if(Inventory.contains(notedGlory6ID) || this.withdrawnFlag) {
             this.withdrawnFlag = true;
             if(GrandExchange.isOpen()) {

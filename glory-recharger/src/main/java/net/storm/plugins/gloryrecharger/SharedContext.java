@@ -10,7 +10,9 @@ import net.runelite.api.coords.WorldArea;
 import net.runelite.api.widgets.ComponentID;
 import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
-import net.storm.plugins.gloryrecharger.enums.RunningState;
+import net.storm.plugins.commons.enums.RunningState;
+import net.storm.plugins.commons.utils.TrackingUtils;
+import net.storm.plugins.commons.utils.WorldHopper;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.Game;
@@ -48,65 +50,19 @@ public class SharedContext {
             WorldType.QUEST_SPEEDRUNNING
     );
 
-    private long startTime;
-    private long totalElapsedTime = 0;
-    private boolean isTimeTracking = false;
-
     @Getter
     private GloryRechargerConfig config;
 
     private int setDestinationWidgetID = 12255235;
     private int animatingObeliskID = 14825;
 
+    WorldHopper worldHopper = new WorldHopper();
+
+    @Getter
+    TrackingUtils trackingUtils = new TrackingUtils();
+
 
     public SharedContext (GloryRechargerConfig config){ this.config = config;}
-
-    public void start() {
-        if (!isTimeTracking) {
-            this.startTime = System.currentTimeMillis();
-            this.isTimeTracking = true;
-        }
-    }
-
-    public void pause() {
-        if (isTimeTracking) {
-            this.totalElapsedTime += System.currentTimeMillis() - startTime;
-            this.isTimeTracking = false;
-        }
-    }
-
-    public long getElapsedTimeSeconds() {
-        if (isTimeTracking) {
-            return (totalElapsedTime + (System.currentTimeMillis() - startTime)) / 1000;
-        } else {
-            return totalElapsedTime / 1000;
-        }
-    }
-
-    public String formatTime() {
-        long totalTime = this.getElapsedTimeSeconds();
-
-        long hours = totalTime / 3600;
-        long minutes = (totalTime % 3600) / 60;
-        long seconds = (totalTime % 60);
-
-        // Format as HH:MM:SS.mmm with leading zeros
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
-    }
-
-    public String calculateRatePerHour(long amount) {
-        double elapsedTimeHours = (double) getElapsedTimeSeconds() / 3600;
-
-        if (elapsedTimeHours == 0) {
-            return "0";
-        }
-
-        double rate = (amount / elapsedTimeHours) ;
-
-        DecimalFormat df = new DecimalFormat("#");
-
-        return df.format(rate);
-    }
 
     public boolean canAttackMe(IPlayer player) {
         String input = Widgets.get(ComponentID.PVP_WILDERNESS_LEVEL).getText();
@@ -143,8 +99,7 @@ public class SharedContext {
 
             for (IPlayer player : players) {
                 if (canAttackMe(player) && player.distanceTo(Players.getLocal().getWorldArea().toWorldPoint()) < radius) {
-                    Worlds.hopTo(Worlds.getRandom(w -> w.getLocation() == Worlds.getCurrent().getLocation() && w.getTypes().contains(WorldType.MEMBERS) &&
-                            w.getTypes().stream().noneMatch(this.excludedWorldTypes::contains)));
+                    worldHopper.hopToLocationSpecificMembersWorld(worldHopper.getCurrentWorldLocation());
                 }
             }
         }

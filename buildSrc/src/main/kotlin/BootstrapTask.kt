@@ -48,7 +48,7 @@ open class BootstrapTask : DefaultTask() {
                     .associateBy { it.id }
                     .toMutableMap()
 
-            project.subprojects.forEach {
+            project.subprojects.filter { it.name == "commons" }.forEach {
                 if (it.project.properties.containsKey("PluginName") && it.project.properties.containsKey("PluginDescription")) {
                     val pluginFile = File("${it.project.buildDir}/libs/${it.project.name}-${it.project.version}.jar")
 
