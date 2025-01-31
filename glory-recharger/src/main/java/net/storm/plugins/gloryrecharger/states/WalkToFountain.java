@@ -8,8 +8,8 @@ import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.api.events.InventoryChanged;
-import net.storm.api.events.PlayerSpawned;
 import net.storm.api.magic.SpellBook;
+import net.storm.plugins.commons.utils.WildyUtils;
 import net.storm.plugins.gloryrecharger.GloryRechargerConfig;
 import net.storm.plugins.gloryrecharger.SharedContext;
 import net.storm.plugins.gloryrecharger.StateMachine;
@@ -22,7 +22,6 @@ import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.Vars;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
-import net.storm.sdk.magic.Magic;
 import net.storm.sdk.movement.Movement;
 import net.storm.sdk.widgets.Dialog;
 
@@ -35,6 +34,8 @@ public class WalkToFountain implements StateMachineInterface {
     AtomicInteger ticks = new AtomicInteger(0);
     boolean ObeliskCompleteFlag = false;
     private final int fountainOfRuneID = 26782;
+
+    WildyUtils wildyUtils = new WildyUtils();
 
     public WalkToFountain(SharedContext context) {
         this.context = context;
@@ -67,7 +68,7 @@ public class WalkToFountain implements StateMachineInterface {
             return;
         }
 
-        if((obelisk != null || TileObjects.getNearest(animatingObeliskID) != null) && !localPlayer.isAnimating() && context.wildyLevel() < 50) {
+        if((obelisk != null || TileObjects.getNearest(animatingObeliskID) != null) && !localPlayer.isAnimating() && wildyUtils.wildyLevel() < 50) {
             if (Vars.getBit(Varbits.DIARY_WILDERNESS_HARD) == 1) {
                 if (Vars.getBit(obeliskDestinationVarbit) != Obelisk.ROUGES_CASTE.getVarbitValue()) {
                     context.setDestinationToRogues();
@@ -99,9 +100,8 @@ public class WalkToFountain implements StateMachineInterface {
 
     }
 
-    private void walkerRoute() {
+    private void annakarlRoute() {
         Set<FountainTransportation> validTransports = Set.of(
-                FountainTransportation.WALKER,
                 FountainTransportation.ANNAKARL_TP,
                 FountainTransportation.ANNAKARL_TABLET
         );
@@ -113,7 +113,13 @@ public class WalkToFountain implements StateMachineInterface {
             return;
         }
 
-        if(context.wildyLevel() < 20) {
+        IPlayer localPlayer = Players.getLocal();
+
+        if (localPlayer.isAnimating()) {
+            return;
+        }
+
+        if(wildyUtils.wildyLevel() < 20) {
             if(config.fountainTransport() == FountainTransportation.ANNAKARL_TP) {
                 if (SpellBook.Ancient.ANNAKARL_TELEPORT.canCast()) {
                     SpellBook.Ancient.ANNAKARL_TELEPORT.cast();
@@ -129,14 +135,17 @@ public class WalkToFountain implements StateMachineInterface {
             }
         }
 
-        IPlayer localPlayer = Players.getLocal();
-
-        if (localPlayer.isAnimating()) {
-            return;
+        WorldArea fountainOfRuneLocation = new WorldArea(3377, 3891, 3, 3, 0);
+        if (!Movement.isWalking() && wildyUtils.wildyLevel() > 30) {
+            Movement.walkTo(fountainOfRuneLocation);
         }
+    }
 
-        WorldArea fountainOfRuneLocation = new WorldArea(3372, 3890, 4, 4, 0);
-        if (!Movement.isWalking() && !localPlayer.getWorldArea().intersectsWith(fountainOfRuneLocation)) {
+    private void walkerRouter() {
+        if (config.fountainTransport() != FountainTransportation.WALKER) return;
+
+        WorldArea fountainOfRuneLocation = new WorldArea(3377, 3891, 3, 3, 0);
+        if (!Movement.isWalking()) {
             Movement.walkTo(fountainOfRuneLocation);
         }
     }
@@ -146,10 +155,10 @@ public class WalkToFountain implements StateMachineInterface {
         IPlayer localPlayer = Players.getLocal();
         ITileObject fountainOfRune = TileObjects.getNearest(o -> o.getId() == fountainOfRuneID);
 
-        context.hopCheck();
+        wildyUtils.hopCheckAndHop(config.hopOnAttackablePlayer());
         context.handleProtectItem();
 
-        if(context.wildyLevel() > 49) {
+        if(wildyUtils.wildyLevel() > 49) {
             this.ObeliskCompleteFlag = true;
         }
 
@@ -164,7 +173,8 @@ public class WalkToFountain implements StateMachineInterface {
             } else {
                 wildernessSwordRoute();
                 obeliskFountainRoute();
-                walkerRoute();
+                annakarlRoute();
+                walkerRouter();
             }
         } else {
             stateMachine.setState(new Banking(context), true);

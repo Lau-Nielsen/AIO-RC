@@ -36,7 +36,7 @@ public class UseFeroxPool implements StateMachineInterface {
             }
 
             ITileObject pool = TileObjects.getNearest(x -> x.hasAction("Drink"));
-            if(!hasClickedPool && pool != null) {
+            if(!hasClickedPool && pool == null) {
                 Movement.walkTo(BankLocation.FEROX_ENCLAVE_BANK);
             }
 

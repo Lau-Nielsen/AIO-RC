@@ -1,5 +1,6 @@
 package net.storm.plugins.gloryrecharger.states;
 
+import net.runelite.api.Quest;
 import net.runelite.api.Skill;
 import net.runelite.api.Varbits;
 import net.storm.api.magic.SpellBook;
@@ -12,6 +13,7 @@ import net.storm.plugins.gloryrecharger.enums.FountainTransportation;
 import net.storm.plugins.gloryrecharger.enums.States;
 import net.storm.sdk.game.Skills;
 import net.storm.sdk.game.Vars;
+import net.storm.sdk.quests.Quests;
 import net.storm.sdk.utils.MessageUtils;
 
 import java.awt.*;
@@ -46,6 +48,11 @@ public class Setup implements StateMachineInterface {
 
         if (config.bank() == Banks.CRAFTING_GUILD && Skills.getLevel(Skill.CRAFTING) < 99) {
             MessageUtils.addMessage("Don't bank at the crafting guild without the crafting cape...", Color.RED);
+            this.forceAddressErrors = true;
+        }
+
+        if (Quests.isFinished(Quest.HEROES_QUEST)) {
+            MessageUtils.addMessage("You have to have heroes guild completed to rechagre glories...", Color.RED);
             this.forceAddressErrors = true;
         }
 

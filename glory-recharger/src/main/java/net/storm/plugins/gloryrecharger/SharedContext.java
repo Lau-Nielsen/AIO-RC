@@ -7,7 +7,6 @@ import net.runelite.api.ItemID;
 import net.runelite.api.Prayer;
 import net.runelite.api.WorldType;
 import net.runelite.api.coords.WorldArea;
-import net.runelite.api.widgets.ComponentID;
 import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.plugins.commons.enums.RunningState;
@@ -16,17 +15,13 @@ import net.storm.plugins.commons.utils.WorldHopper;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.Game;
-import net.storm.sdk.game.Worlds;
 import net.storm.sdk.input.Keyboard;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.movement.Movement;
 import net.storm.sdk.widgets.Prayers;
 import net.storm.sdk.widgets.Widgets;
 
-import java.text.DecimalFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Setter
 @Getter
@@ -63,47 +58,6 @@ public class SharedContext {
 
 
     public SharedContext (GloryRechargerConfig config){ this.config = config;}
-
-    public boolean canAttackMe(IPlayer player) {
-        String input = Widgets.get(ComponentID.PVP_WILDERNESS_LEVEL).getText();
-        Pattern pattern = Pattern.compile("(\\d+)-(\\d+)");
-        Matcher matcher = pattern.matcher(input);
-
-        if (matcher.find()) {
-            return Integer.parseInt(matcher.group(1)) <= player.getCombatLevel() || Integer.parseInt(matcher.group(2)) >= player.getCombatLevel();
-        }
-
-        return false;
-    }
-
-    public int wildyLevel() {
-        String input = Widgets.get(ComponentID.PVP_WILDERNESS_LEVEL).getText();
-
-        Pattern pattern = Pattern.compile("Level: (\\d+)");
-        Matcher matcher = pattern.matcher(input);
-
-        if (matcher.find()) {
-            return Integer.parseInt(matcher.group(1));
-        }
-        return 0;
-    }
-
-    public void hopCheck() {
-        if (!this.config.hopOnAttackablePlayer()) {
-            return;
-        }
-
-        if(Game.isInWilderness() && config.hopOnAttackablePlayer()) {
-            List<IPlayer> players = Players.getAll(p -> p.getId() != Players.getLocal().getId());
-            int radius = wildyLevel() < 20 ? 10 : 20;
-
-            for (IPlayer player : players) {
-                if (canAttackMe(player) && player.distanceTo(Players.getLocal().getWorldArea().toWorldPoint()) < radius) {
-                    worldHopper.hopToLocationSpecificMembersWorld(worldHopper.getCurrentWorldLocation());
-                }
-            }
-        }
-    }
 
     public WorldArea calculateMiddleOfObelisk() {
         int sumX = 0;

@@ -13,7 +13,6 @@ import net.storm.api.events.ConfigChanged;
 import net.storm.api.plugins.PluginDescriptor;
 import net.storm.api.plugins.config.ConfigManager;
 import net.storm.plugins.commons.enums.RunningState;
-import net.storm.plugins.commons.utils.TrackingUtils;
 import net.storm.plugins.gloryrecharger.enums.States;
 import net.storm.plugins.gloryrecharger.states.Setup;
 import net.storm.sdk.plugins.LoopedPlugin;

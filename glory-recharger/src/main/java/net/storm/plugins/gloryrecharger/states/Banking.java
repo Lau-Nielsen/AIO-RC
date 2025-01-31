@@ -7,6 +7,7 @@ import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.plugins.commons.enums.RunningState;
 import net.storm.plugins.commons.utils.BankUtils;
+import net.storm.plugins.commons.utils.WildyUtils;
 import net.storm.plugins.gloryrecharger.GloryRechargerConfig;
 import net.storm.plugins.gloryrecharger.SharedContext;
 import net.storm.plugins.gloryrecharger.StateMachine;
@@ -32,7 +33,7 @@ public class Banking implements StateMachineInterface {
         this.context = context;
         this.config = context.getConfig();
     }
-
+    WildyUtils wildyUtils = new WildyUtils();
     BankUtils bankUtils = new BankUtils();
 
     private void obeliskHomeRoute() {
@@ -43,14 +44,14 @@ public class Banking implements StateMachineInterface {
 
         ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 15,o -> o != null && o.hasAction("Activate"));
 
-        if(!Movement.isWalking() && obelisk == null && TileObjects.getNearest(animatingObeliskID) == null && context.wildyLevel() > 20) {
+        if(!Movement.isWalking() && obelisk == null && TileObjects.getNearest(animatingObeliskID) == null && wildyUtils.wildyLevel() > 20) {
             Movement.walkTo(rougesCastle);
             return;
         }
 
         if((obelisk != null || TileObjects.getNearest(animatingObeliskID) != null) && !localPlayer.isAnimating()) {
             if (Vars.getBit(Varbits.DIARY_WILDERNESS_HARD) == 1) {
-                if (context.wildyLevel() >= 20) {
+                if (wildyUtils.wildyLevel() >= 20) {
                     if (Vars.getBit(obeliskDestinationVarbit) != Obelisk.FEROX_SE.getVarbitValue()) {
                         context.setDestinationToFerox();
                     } else {
@@ -60,7 +61,7 @@ public class Banking implements StateMachineInterface {
                     Bank.open(config.bank().getBankLocation());
                 }
             } else {
-                if(context.wildyLevel() > 20) {
+                if(wildyUtils.wildyLevel() > 20) {
                     if (TileObjects.getNearest(animatingObeliskID) == null) {
                         obelisk.interact("Activate");
                     } else {
@@ -71,7 +72,7 @@ public class Banking implements StateMachineInterface {
                 }
             }
             // Ferox safe zone outside of barriers check
-        } else if (Game.isInWilderness() && context.wildyLevel() == 0) {
+        } else if (Game.isInWilderness() && wildyUtils.wildyLevel() == 0) {
             Bank.open(config.bank().getBankLocation());
         }
     }
@@ -103,18 +104,21 @@ public class Banking implements StateMachineInterface {
 
     private void withdrawAndDrinkStamina(StateMachine statemachine) {
         if(config.useStamina()) {
+            if(!Bank.contains(i -> i.getName() != null && i.getName().contains("Stamina potion"))) {
+                if(config.restockStaminas()) {
+                    withdrawGETransportItem();
+                    statemachine.setState(new GERestock(context, ItemID.STAMINA_POTION1), false);
+                } else {
+                    context.setCurrentRunningState(RunningState.STOPPED);
+                    MessageUtils.addMessage("Out of staminas, stopping plugin", Color.red);
+                }
+                return;
+            }
+
             if(Movement.getRunEnergy() <= config.staminaThreshold() && !Movement.isStaminaBoosted()) {
                 bankUtils.withdrawAndDrinkStamina();
             }
             bankUtils.depositStamina();
-
-            if(config.restockStaminas() && !Bank.contains(i -> i.getName() != null && i.getName().contains("Stamina potion"))) {
-                withdrawGETransportItem();
-                statemachine.setState(new GERestock(context, ItemID.STAMINA_POTION1), false);
-            } else {
-                context.setCurrentRunningState(RunningState.STOPPED);
-                MessageUtils.addMessage("Out of staminas, stopping plugin", Color.red);
-            }
         }
     }
 
@@ -123,6 +127,8 @@ public class Banking implements StateMachineInterface {
             if(!Bank.contains(ItemID.WILDERNESS_SWORD_4)) {
                 MessageUtils.addMessage("Out of wildy swords, buy more at Perdu, stopping plugin", Color.red);
                 context.setCurrentRunningState(RunningState.STOPPED);
+
+                return;
             }
 
             bankUtils.withdrawAndEquip(ItemID.WILDERNESS_SWORD_4);
@@ -161,12 +167,15 @@ public class Banking implements StateMachineInterface {
             } else if (config.restockTabs()){
                 withdrawGETransportItem();
                 stateMachine.setState(new GERestock(context, ItemID.ANNAKARL_TELEPORT), false);
+            } else {
+                MessageUtils.addMessage("Out of Annakarl teleports, stopping plugin", Color.red);
+                context.setCurrentRunningState(RunningState.STOPPED);
             }
         }
     }
 
     private void withdrawGlories(StateMachine stateMachine) {
-        if(Bank.Inventory.getCount(false, ItemID.AMULET_OF_GLORY) >= context.getConfig().gloriesToBring()){
+        if(Bank.Inventory.getCount(false, ItemID.AMULET_OF_GLORY) > context.getConfig().gloriesToBring()){
             Bank.depositAll(ItemID.AMULET_OF_GLORY);
         }
 
@@ -185,7 +194,7 @@ public class Banking implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine) {
-        context.hopCheck();
+        wildyUtils.hopCheckAndHop(config.hopOnAttackablePlayer());
         context.handleProtectItem();
 
         if(!Bank.isOpen() && !Movement.isWalking()) {

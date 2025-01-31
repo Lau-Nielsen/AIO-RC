@@ -4,10 +4,8 @@ import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
 import net.storm.plugins.gloryrecharger.enums.FountainTransportation;
-import net.storm.plugins.gloryrecharger.enums.RunningState;
 
 import java.awt.*;
-import java.text.DecimalFormat;
 
 class GloryRechargerOverlay extends OverlayPanel
 {
