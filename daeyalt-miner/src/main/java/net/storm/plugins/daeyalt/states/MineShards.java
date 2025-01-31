@@ -9,6 +9,7 @@ import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.api.events.InventoryChanged;
 import net.storm.api.widgets.Tab;
+import net.storm.plugins.commons.utils.WorldHopper;
 import net.storm.plugins.daeyalt.DaeyaltMinerConfig;
 import net.storm.plugins.daeyalt.SharedContext;
 import net.storm.plugins.daeyalt.StateMachine;
@@ -28,10 +29,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MineShards implements StateMachineInterface {
     DaeyaltMinerConfig config;
     SharedContext context;
-
     AtomicInteger ticks = new AtomicInteger(0);
-
     private final int daeyaltRockID = 39095;
+
+    WorldHopper worldHopper = new WorldHopper();
 
     @Subscribe
     private void onGameTick(final GameTick event) {
@@ -86,11 +87,10 @@ public class MineShards implements StateMachineInterface {
         IPlayer localPlayer = Players.getLocal();
 
         if (!aloneQuestionMark && this.config.skitzoHop()) {
-            int currentWorldLocation = Worlds.getCurrent().getLocation();
             Worlds.openHopper();
 
             if (Worlds.isHopperOpen()) {
-                Worlds.hopTo(Worlds.getRandom(w -> Worlds.isMembers(w) && w.getLocation() == currentWorldLocation));
+                worldHopper.hopToLocationSpecificMembersWorld(worldHopper.getCurrentWorldLocation());
                 Widgets.get(Tab.INVENTORY.getWidgetInfo().getId()).click();
             }
         }

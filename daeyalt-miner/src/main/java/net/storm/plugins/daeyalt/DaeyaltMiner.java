@@ -12,7 +12,7 @@ import net.storm.api.events.ConfigButtonClicked;
 import net.storm.api.events.ConfigChanged;
 import net.storm.api.plugins.PluginDescriptor;
 import net.storm.api.plugins.config.ConfigManager;
-import net.storm.plugins.daeyalt.enums.RunningState;
+import net.storm.plugins.commons.enums.RunningState;
 import net.storm.plugins.daeyalt.states.Setup;
 import net.storm.sdk.plugins.LoopedPlugin;
 import org.pf4j.Extension;
@@ -53,11 +53,11 @@ public class DaeyaltMiner extends LoopedPlugin {
     public void onConfigButtonClicked(ConfigButtonClicked buttonClicked) {
         if (buttonClicked.getKey().equals("startPlugin")) {
             if (RunningState.RUNNING.equals(context.getCurrentRunningState())) {
-                context.pause();
+                context.getTrackingUtils().pause();
                 context.setCurrentRunningState(RunningState.STOPPED);
             } else {
                 context.setCurrentRunningState(RunningState.RUNNING);
-                context.start();
+                context.getTrackingUtils().start();
             }
         }
 

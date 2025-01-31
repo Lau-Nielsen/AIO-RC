@@ -3,7 +3,7 @@ package net.storm.plugins.daeyalt;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
-import net.storm.plugins.daeyalt.enums.RunningState;
+import net.storm.plugins.commons.enums.RunningState;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -17,29 +17,20 @@ class DaeyaltMinerOverlay extends OverlayPanel
         this.context = context;
     }
 
-    DecimalFormat df = new DecimalFormat("#.00k");
-
     @Override
     public Dimension render(Graphics2D graphics)
     {
         if (context != null) {;
-            if (context.getCurrentRunningState() == RunningState.RUNNING) {
-                panelComponent.getChildren().add(TitleComponent.builder()
-                        .text("Daeyalt Miner RUNNING")
-                        .color(Color.GREEN).preferredSize(new Dimension(300,200))
-                        .build());
-            } else
             {
                 panelComponent.getChildren().add(TitleComponent.builder()
-                        .text("Daeyalt Miner PAUSED")
-                        .color(Color.YELLOW)
+                        .text("Daeyalt Miner: " + context.getCurrentRunningState())
+                        .color(Color.GREEN).preferredSize(new Dimension(300,200))
                         .build());
             }
-
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("Time elapsed:")
-                        .right(context.formatTime())
+                        .right(context.trackingUtils.formatTime())
                         .build());
             }
 
@@ -57,7 +48,7 @@ class DaeyaltMinerOverlay extends OverlayPanel
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("Shards mined:")
-                        .right((context.getShardsMined() > 10000 ? df.format((double) context.getShardsMined() / 1000) : context.getShardsMined()) +  " | " + context.calculateRatePerHour(context.getShardsMined()) +"/hr")
+                        .right(context.getTrackingUtils().getTotalAmountAndRate(context.getShardsMined()))
                         .build());
             }
         }
