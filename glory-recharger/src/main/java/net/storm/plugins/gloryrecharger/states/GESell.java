@@ -21,7 +21,8 @@ public class GESell implements StateMachineInterface {
     SharedContext context;
     GloryRechargerConfig config;
     boolean collectedFlag = false;
-    boolean withDrawnFlag = false;
+    boolean withdrawnFlag = false;
+    private int notedGlory6ID = 11979;
 
     public GESell(SharedContext context) {
         this.context = context;
@@ -35,8 +36,8 @@ public class GESell implements StateMachineInterface {
 
 
 
-        if(Inventory.contains(11979) || this.withDrawnFlag) {
-            this.withDrawnFlag = true;
+        if(Inventory.contains(notedGlory6ID) || this.withdrawnFlag) {
+            this.withdrawnFlag = true;
             if(GrandExchange.isOpen()) {
                 if(offers.stream().anyMatch(o -> o.getItemId() == ItemID.AMULET_OF_GLORY6)) {
                     if(offers.stream().anyMatch(o -> o.getItemId() == ItemID.AMULET_OF_GLORY6 && o.getState() == GrandExchangeOfferState.SOLD)) {
@@ -44,7 +45,7 @@ public class GESell implements StateMachineInterface {
                         this.collectedFlag = true;
                     }
                 } else if (!collectedFlag) {
-                    GrandExchange.sell(ItemID.AMULET_OF_GLORY6, Inventory.getCount(true, 11979), price);
+                    GrandExchange.sell(ItemID.AMULET_OF_GLORY6, Inventory.getCount(true, notedGlory6ID), price);
                 } else {
                     stateMachine.setState(new GERestock(context, ItemID.AMULET_OF_GLORY), false);
                 }
@@ -54,12 +55,14 @@ public class GESell implements StateMachineInterface {
         } else {
             if (!Bank.isOpen() && !Movement.isWalking()) {
                 Bank.open(BankLocation.GRAND_EXCHANGE_BANK);
-            } else {
+            } else if(Bank.isOpen() && !Bank.contains(ItemID.AMULET_OF_GLORY6)) {
+                stateMachine.setState(new GERestock(context, ItemID.AMULET_OF_GLORY), false);
+            } else if (Bank.isOpen()) {
                 Bank.setWithdrawMode(true);
 
-                if(Bank.isNotedWithdrawMode()) {
+                if (Bank.isNotedWithdrawMode()) {
                     Bank.withdrawAll(ItemID.AMULET_OF_GLORY6);
-                    this.withDrawnFlag = true;
+                    this.withdrawnFlag = true;
                 }
             }
         }

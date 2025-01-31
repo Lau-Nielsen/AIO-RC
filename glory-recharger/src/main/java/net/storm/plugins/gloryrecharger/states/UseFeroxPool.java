@@ -1,7 +1,5 @@
 package net.storm.plugins.gloryrecharger.states;
 
-import net.runelite.api.events.GameTick;
-import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.api.movement.pathfinder.model.BankLocation;
 import net.storm.plugins.gloryrecharger.GloryRechargerConfig;
@@ -15,8 +13,6 @@ import net.storm.sdk.items.Bank;
 import net.storm.sdk.movement.Movement;
 import net.storm.sdk.widgets.Prayers;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class UseFeroxPool implements StateMachineInterface {
     private final SharedContext context;
     private final GloryRechargerConfig config;
@@ -27,16 +23,6 @@ public class UseFeroxPool implements StateMachineInterface {
     }
 
     private boolean hasClickedPool = false;
-    private boolean startCountingTicks = false;
-
-    private AtomicInteger ticksSincePoolRefreshment = new AtomicInteger(0);
-
-    @Subscribe
-    private void onGameTick(GameTick tick) {
-        if(startCountingTicks) {
-            ticksSincePoolRefreshment.incrementAndGet();
-        }
-    }
 
     @Override
     public void handleState(StateMachine stateMachine) {
@@ -44,7 +30,7 @@ public class UseFeroxPool implements StateMachineInterface {
         boolean isFullRunEnergy = Movement.getRunEnergy() == 100;
         boolean isFullPrayer = Prayers.getMissingPoints() == 0;
 
-        if (config.useFeroxPool() && !isFullHP && !isFullRunEnergy && !isFullPrayer) {
+        if (config.useFeroxPool() && (!isFullHP || !isFullRunEnergy || !isFullPrayer)) {
             if(Bank.isOpen()) {
                 Bank.close();
             }
@@ -54,17 +40,10 @@ public class UseFeroxPool implements StateMachineInterface {
                 Movement.walkTo(BankLocation.FEROX_ENCLAVE_BANK);
             }
 
-            if((!isFullRunEnergy || !isFullHP || !isFullPrayer) && !hasClickedPool && !Bank.isOpen()) {
+            if(!hasClickedPool && !Bank.isOpen()) {
                 if(pool != null) {
                     pool.interact("Drink");
                     this.hasClickedPool = true;
-                }
-            }
-
-            if (hasClickedPool && isFullHP && isFullRunEnergy && isFullPrayer) {
-                this.startCountingTicks = true;
-                if(ticksSincePoolRefreshment.get() >= 2) {
-                    stateMachine.setState(new WalkToFountain(context), true);
                 }
             }
         } else {

@@ -50,6 +50,7 @@ public class DepleteGlories implements StateMachineInterface {
                 if(!localPlayer.isAnimating() && !Dialog.isOpen()) {
                     Inventory.getFirst(ItemID.AMULET_OF_GLORY1).interact("Rub");
                 } else if (Dialog.isOpen()) {
+                    // Make sure last tp is Edgeville, probably not needed but I don't think it matters
                     Dialog.chooseOption("Edgeville");
                 }
             }

@@ -6,6 +6,7 @@ import net.storm.api.plugins.config.*;
 import net.storm.plugins.gloryrecharger.enums.BankTransportation;
 import net.storm.plugins.gloryrecharger.enums.Banks;
 import net.storm.plugins.gloryrecharger.enums.FountainTransportation;
+import net.storm.plugins.gloryrecharger.enums.GETransportation;
 
 @ConfigGroup(GloryRechargerConfig.GROUP)
 @SoxExclude // Exclude from obfuscation
@@ -163,9 +164,20 @@ public interface GloryRechargerConfig extends Config {
     }
 
     @ConfigItem(
+            keyName = "geTransportation",
+            name = "GE Transport",
+            position = 0,
+            section = restockConfig,
+            description = "How do you want to get to the GE?"
+    )
+    default GETransportation geTransportation() {
+        return GETransportation.RING_OF_WEALTH;
+    }
+
+    @ConfigItem(
             keyName = "restockGlories",
             name = "Restock Glories",
-            position = 0,
+            position = 1,
             description = "Sell glories and restock at the GE.",
             section = restockConfig
     )
@@ -180,7 +192,7 @@ public interface GloryRechargerConfig extends Config {
     @ConfigItem(
             keyName = "gloryLimit",
             name = "Glories to buy",
-            position = 1,
+            position = 2,
             description = "Amount of glories to restock.",
             section = restockConfig,
             hidden = true,
@@ -194,7 +206,7 @@ public interface GloryRechargerConfig extends Config {
     @ConfigItem(
             keyName = "restockRunes",
             name = "Restock Runes",
-            position = 2,
+            position = 3,
             description = "Buy runes for Annakarl tp.",
             section = restockConfig
     )
@@ -209,7 +221,7 @@ public interface GloryRechargerConfig extends Config {
     @ConfigItem(
             keyName = "runesLimit",
             name = "Runes to buy",
-            position = 3,
+            position = 4,
             description = "Amount runes to restock.",
             section = restockConfig,
             hidden = true,
@@ -223,7 +235,7 @@ public interface GloryRechargerConfig extends Config {
     @ConfigItem(
             keyName = "restockTabs",
             name = "Restock TP tabs",
-            position = 4,
+            position = 5,
             description = "Buy Annakarl TP tabs",
             section = restockConfig
     )
@@ -238,7 +250,7 @@ public interface GloryRechargerConfig extends Config {
     @ConfigItem(
             keyName = "tabsLimit",
             name = "Tabs to buy",
-            position = 5,
+            position = 6,
             description = "Amount Annakarl tps to buy.",
             section = restockConfig,
             hidden = true,
@@ -252,7 +264,7 @@ public interface GloryRechargerConfig extends Config {
     @ConfigItem(
             keyName = "restockStaminas",
             name = "Restock Staminas",
-            position = 6,
+            position = 7,
             description = "Buy stamina pots (1) at the ge",
             section = restockConfig
     )
@@ -267,7 +279,7 @@ public interface GloryRechargerConfig extends Config {
     @ConfigItem(
             keyName = "staminaLimit",
             name = "Staminas to buy",
-            position = 7,
+            position = 8,
             description = "Amount staminas to buy.",
             section = restockConfig,
             hidden = true,
@@ -287,7 +299,7 @@ public interface GloryRechargerConfig extends Config {
     @ConfigItem(
             keyName = "priceBuyMultiplier",
             name = "Buy price",
-            position = 8,
+            position = 9,
             description = "What price items be bought at 100 being guide price. </br> 105 being guide price +5%",
             section = restockConfig
     )
@@ -305,7 +317,7 @@ public interface GloryRechargerConfig extends Config {
     @ConfigItem(
             keyName = "sellMultiplier",
             name = "Sell price",
-            position = 9,
+            position = 10,
             description = "What price items be sold at 100 being guide price. </br> 105 being guide price +5%",
             section = restockConfig
     )

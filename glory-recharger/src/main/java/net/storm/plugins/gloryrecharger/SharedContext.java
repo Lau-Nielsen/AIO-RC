@@ -55,6 +55,10 @@ public class SharedContext {
     @Getter
     private GloryRechargerConfig config;
 
+    private int setDestinationWidgetID = 12255235;
+    private int animatingObeliskID = 14825;
+
+
     public SharedContext (GloryRechargerConfig config){ this.config = config;}
 
     public void start() {
@@ -149,7 +153,7 @@ public class SharedContext {
     public WorldArea calculateMiddleOfObelisk() {
         int sumX = 0;
         int sumY = 0;
-        List<ITileObject> obelisk = TileObjects.getAll(o -> o.getName() != null && (o.getId() == 14825 || o.getName().equals("Obelisk")));
+        List<ITileObject> obelisk = TileObjects.getAll(o -> o.getName() != null && (o.getId() == animatingObeliskID || o.getName().equals("Obelisk")));
 
         for (ITileObject o : obelisk) {
             sumX += o.getWorldX();
@@ -179,7 +183,7 @@ public class SharedContext {
     public void teleportToDestination() {
         IPlayer localPlayer = Players.getLocal();
         ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
-        if (TileObjects.getNearest(14825) == null) {
+        if (TileObjects.getNearest(animatingObeliskID) == null) {
             obelisk.interact("Teleport to Destination");
         } else {
             Movement.walkTo(calculateMiddleOfObelisk());
@@ -190,7 +194,8 @@ public class SharedContext {
         IPlayer localPlayer = Players.getLocal();
         ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
 
-        if (Widgets.isVisible(12255235)) {
+        // honestly just some random widget ID from the Set destination widget on obelisks
+        if (Widgets.isVisible(setDestinationWidgetID)) {
             Keyboard.type(1);
         } else {
             obelisk.interact("Set Destination");
@@ -201,7 +206,8 @@ public class SharedContext {
         IPlayer localPlayer = Players.getLocal();
         ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
 
-        if (Widgets.isVisible(12255235)) {
+        // honestly just some random widget ID from the Set destination widget on obelisks
+        if (Widgets.isVisible(setDestinationWidgetID)) {
             Keyboard.type(6);
         } else {
             obelisk.interact("Set Destination");

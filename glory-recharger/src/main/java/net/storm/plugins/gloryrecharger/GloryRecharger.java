@@ -94,6 +94,7 @@ public class GloryRecharger extends LoopedPlugin {
         if (context.getCurrentRunningState() == RunningState.RUNNING) {
             this.stateMachine.handleState();
             context.setCurrentState(stateMachine.getCurrentStateName().name());
+            System.out.println("Handling state: " + stateMachine.getCurrentStateName());
         }
 
     }
