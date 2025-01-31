@@ -13,6 +13,7 @@ import net.storm.api.events.ConfigChanged;
 import net.storm.api.plugins.PluginDescriptor;
 import net.storm.api.plugins.config.ConfigManager;
 import net.storm.plugins.gloryrecharger.enums.RunningState;
+import net.storm.plugins.gloryrecharger.enums.States;
 import net.storm.plugins.gloryrecharger.states.Setup;
 import net.storm.sdk.plugins.LoopedPlugin;
 import org.pf4j.Extension;
@@ -58,6 +59,9 @@ public class GloryRecharger extends LoopedPlugin {
             } else {
                 context.setCurrentRunningState(RunningState.RUNNING);
                 context.start();
+                if(stateMachine != null && stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
+                    stateMachine.setState(new Setup(context), false);
+                }
             }
         }
 
@@ -80,7 +84,11 @@ public class GloryRecharger extends LoopedPlugin {
         if (isRunning() && this.stateMachine == null) {
             setStateMachine(new StateMachine(eventBus));
             this.stateMachine.setState(new Setup(context), true);
-            System.out.println("Initializing Daeyalt Miner Plugin");
+            System.out.println("Initializing Glory Recharger Plugin");
+        }
+
+        if(stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
+            context.setCurrentRunningState(RunningState.PAUSED);
         }
 
         if (context.getCurrentRunningState() == RunningState.RUNNING) {

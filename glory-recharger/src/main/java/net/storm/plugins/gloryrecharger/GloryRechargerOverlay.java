@@ -3,6 +3,7 @@ package net.storm.plugins.gloryrecharger;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
+import net.storm.plugins.gloryrecharger.enums.FountainTransportation;
 import net.storm.plugins.gloryrecharger.enums.RunningState;
 
 import java.awt.*;
@@ -10,56 +11,105 @@ import java.text.DecimalFormat;
 
 class GloryRechargerOverlay extends OverlayPanel
 {
-    private final SharedContext context;
+    SharedContext context;
+    GloryRechargerConfig config;
 
     public GloryRechargerOverlay(SharedContext context)
     {
         this.context = context;
+        this.config = context.getConfig();
     }
-
-    DecimalFormat df = new DecimalFormat("#.00k");
 
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        if (context != null) {;
-            if (context.getCurrentRunningState() == RunningState.RUNNING) {
-                panelComponent.getChildren().add(TitleComponent.builder()
-                        .text("Glory Charger RUNNING")
-                        .color(Color.GREEN).preferredSize(new Dimension(300,200))
-                        .build());
-            } else
+        if (context != null && config.showOverlay()) {
+            {
+                panelComponent.setPreferredSize(new Dimension(200,100));
+                panelComponent.setBackgroundColor(new Color(11, 40, 184, 30));
+            }
             {
                 panelComponent.getChildren().add(TitleComponent.builder()
-                        .text("Glory Charger PAUSED")
-                        .color(Color.YELLOW)
+                        .text("Glory Charger: " + context.getCurrentRunningState())
+                        .color(Color.GREEN)
                         .build());
             }
-
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("Time elapsed:")
                         .right(context.formatTime())
                         .build());
             }
-
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("State:")
                         .right(context.getCurrentState())
                         .build());
             }
-
             {
                 panelComponent.getChildren().add(LineComponent.builder().build());
             }
-
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("Glories charged:")
-                        .right((context.getGloriesCharged() > 10000 ? df.format((double) context.getGloriesCharged() / 1000) : context.getGloriesCharged()) +  " | " + context.calculateRatePerHour(context.getGloriesCharged()) +"/hr")
+                        .right(context.getGloriesCharged() +  " | " + context.calculateRatePerHour(context.getGloriesCharged()) +"/hr")
                         .build());
             }
+            if(config.showStock()) {
+                {
+                    panelComponent.getChildren().add(LineComponent.builder().build());
+                }
+                {
+                    panelComponent.getChildren().add(LineComponent.builder()
+                            .left("Stock:")
+                            .build());
+                }
+                {
+                    panelComponent.getChildren().add(LineComponent.builder()
+                            .left("Glories:")
+                            .right(context.getGlories().toString())
+                            .build());
+                }
+                if (config.useStamina()) {
+                    {
+                        panelComponent.getChildren().add(LineComponent.builder()
+                                .left("Stamina pots:")
+                                .right(context.getStaminas().toString())
+                                .build());
+                    }
+                }
+                if (config.fountainTransport() == FountainTransportation.ANNAKARL_TABLET) {
+                    {
+                        panelComponent.getChildren().add(LineComponent.builder()
+                                .left("Annakarl tabs:")
+                                .right(context.getAnnakarlTabs().toString())
+                                .build());
+                    }
+                }
+                if (config.fountainTransport() == FountainTransportation.WILDERNESS_SWORD) {
+                    {
+                        panelComponent.getChildren().add(LineComponent.builder()
+                                .left("Wildy swords:")
+                                .right(context.getWildySwords().toString())
+                                .build());
+                    }
+                }
+                if (config.fountainTransport() == FountainTransportation.ANNAKARL_TP) {
+                    {
+                        panelComponent.getChildren().add(LineComponent.builder()
+                                .left("Law runes:")
+                                .right(context.getLawRunes().toString())
+                                .build());
+                    }
+                    {
+                        panelComponent.getChildren().add(LineComponent.builder()
+                                .left("Blood runes:")
+                                .right(context.getBloodRunes().toString())
+                                .build());
+                    }
+                }
+            }
+
         }
 
         return super.render(graphics);

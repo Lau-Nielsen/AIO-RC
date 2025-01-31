@@ -106,7 +106,7 @@ public class AIORC extends LoopedPlugin {
         }
 
         if(stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
-            context.setCurrentRunningState(RunningState.STOPPED);
+            context.setCurrentRunningState(RunningState.PAUSED);
         }
 
 

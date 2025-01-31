@@ -91,9 +91,6 @@ public class MineShards implements StateMachineInterface {
             }
         }
 
-        System.out.println(aloneQuestionMark + " " + Players.getAll().size());
-        System.out.println(localPlayer.distanceTo(mineablePillar.getWorldLocation()));
-
         if (mineablePillar != null) {
             if(this.config.tickManip()) {
                 if(this.config.stopTickManip() && !aloneQuestionMark) {

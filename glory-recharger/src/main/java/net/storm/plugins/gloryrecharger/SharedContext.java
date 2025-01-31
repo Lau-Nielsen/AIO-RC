@@ -3,19 +3,20 @@ package net.storm.plugins.gloryrecharger;
 import com.google.inject.Singleton;
 import lombok.Getter;
 import lombok.Setter;
+import net.runelite.api.ItemID;
 import net.runelite.api.Prayer;
 import net.runelite.api.WorldType;
 import net.runelite.api.coords.WorldArea;
 import net.runelite.api.widgets.ComponentID;
 import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
-import net.storm.api.entities.IPlayers;
 import net.storm.plugins.gloryrecharger.enums.RunningState;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.Game;
 import net.storm.sdk.game.Worlds;
 import net.storm.sdk.input.Keyboard;
+import net.storm.sdk.items.Bank;
 import net.storm.sdk.movement.Movement;
 import net.storm.sdk.widgets.Prayers;
 import net.storm.sdk.widgets.Widgets;
@@ -31,6 +32,12 @@ import java.util.regex.Pattern;
 public class SharedContext {
     private Integer gloriesCharged = 0; // done
     private Integer eternalGlories = 0; // done
+    private Integer lawRunes = 0; // done
+    private Integer bloodRunes = 0; // done
+    private Integer annakarlTabs = 0; // done
+    private Integer wildySwords = 0; // done
+    private Integer staminas = 0; // done
+    private Integer glories = 0; // done
     private String currentState; // done;
     private RunningState currentRunningState = RunningState.AWAITING_START; // done;
 
@@ -44,7 +51,6 @@ public class SharedContext {
     private long startTime;
     private long totalElapsedTime = 0;
     private boolean isTimeTracking = false;
-
 
     @Getter
     private GloryRechargerConfig config;
@@ -104,7 +110,6 @@ public class SharedContext {
         Matcher matcher = pattern.matcher(input);
 
         if (matcher.find()) {
-            System.out.println("??");
             return Integer.parseInt(matcher.group(1)) <= player.getCombatLevel() || Integer.parseInt(matcher.group(2)) >= player.getCombatLevel();
         }
 
@@ -118,7 +123,6 @@ public class SharedContext {
         Matcher matcher = pattern.matcher(input);
 
         if (matcher.find()) {
-            System.out.println(Integer.parseInt(matcher.group(1)));
             return Integer.parseInt(matcher.group(1));
         }
         return 0;
@@ -162,7 +166,9 @@ public class SharedContext {
 
             for (IPlayer player : players) {
                 if (player.isInteracting() && player.getInteracting().getId() == me.getId() && Prayers.canUse(Prayer.PROTECT_ITEM)) {
-                    Prayers.toggle(Prayer.PROTECT_ITEM);
+                    if(Prayers.isEnabled(Prayer.PROTECT_ITEM)) {
+                        Prayers.toggle(Prayer.PROTECT_ITEM);
+                    }
                 }
             }
         } else if (Prayers.isEnabled(Prayer.PROTECT_ITEM)) {
@@ -200,5 +206,14 @@ public class SharedContext {
         } else {
             obelisk.interact("Set Destination");
         }
+    }
+
+    public void checkStock() {
+        this.glories = Bank.getCount(true, ItemID.AMULET_OF_GLORY);
+        this.lawRunes = Bank.getCount(true, ItemID.LAW_RUNE);
+        this.bloodRunes = Bank.getCount(true, ItemID.BLOOD_RUNE);
+        this.annakarlTabs = Bank.getCount(true, ItemID.ANNAKARL_TELEPORT);
+        this.wildySwords = Bank.getCount(true, ItemID.WILDERNESS_SWORD_4);
+        this.staminas = Bank.getCount(true, ItemID.STAMINA_POTION1);
     }
 }

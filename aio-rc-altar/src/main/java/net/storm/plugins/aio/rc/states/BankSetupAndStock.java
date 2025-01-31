@@ -153,6 +153,10 @@ public class BankSetupAndStock implements StateMachineInterface {
         }
 
         if(Bank.isOpen()) {
+            if (Bank.isNotedWithdrawMode()) {
+                Bank.setWithdrawMode(false);
+            }
+
             if(Bank.Inventory.getAll().isEmpty()){
                 if (!checkedForLoadoutIds) {
                     setEquipmentIds();

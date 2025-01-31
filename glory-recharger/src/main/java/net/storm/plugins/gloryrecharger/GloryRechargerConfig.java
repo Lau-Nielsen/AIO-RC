@@ -26,6 +26,20 @@ public interface GloryRechargerConfig extends Config {
     )
     String transportConfig = "transportConfig";
 
+    @ConfigSection(
+            name = "Restock",
+            description = "Settings to restock.",
+            position = 30
+    )
+    String restockConfig = "restockConfig";
+
+    @ConfigSection(
+            name = "Overlay",
+            description = "Overlay settings.",
+            position = 40
+    )
+    String overlayConfig = "overlayConfig";
+
     @ConfigItem(
             keyName = "bank",
             name = "Bank location",
@@ -146,6 +160,182 @@ public interface GloryRechargerConfig extends Config {
     default boolean hopOnAttackablePlayer()
     {
         return false;
+    }
+
+    @ConfigItem(
+            keyName = "restockGlories",
+            name = "Restock Glories",
+            position = 0,
+            description = "Sell glories and restock at the GE.",
+            section = restockConfig
+    )
+    default boolean restockGlories()
+    {
+        return false;
+    }
+
+    @Range(
+            max = 10000
+    )
+    @ConfigItem(
+            keyName = "gloryLimit",
+            name = "Glories to buy",
+            position = 1,
+            description = "Amount of glories to restock.",
+            section = restockConfig,
+            hidden = true,
+            unhide = "restockGlories"
+    )
+    default int gloryLimit()
+    {
+        return 0;
+    }
+
+    @ConfigItem(
+            keyName = "restockRunes",
+            name = "Restock Runes",
+            position = 2,
+            description = "Buy runes for Annakarl tp.",
+            section = restockConfig
+    )
+    default boolean restockRunes()
+    {
+        return false;
+    }
+
+    @Range(
+            max = 25000
+    )
+    @ConfigItem(
+            keyName = "runesLimit",
+            name = "Runes to buy",
+            position = 3,
+            description = "Amount runes to restock.",
+            section = restockConfig,
+            hidden = true,
+            unhide = "restockRunes"
+    )
+    default int runesLimit()
+    {
+        return 0;
+    }
+
+    @ConfigItem(
+            keyName = "restockTabs",
+            name = "Restock TP tabs",
+            position = 4,
+            description = "Buy Annakarl TP tabs",
+            section = restockConfig
+    )
+    default boolean restockTabs()
+    {
+        return false;
+    }
+
+    @Range(
+            max = 10000
+    )
+    @ConfigItem(
+            keyName = "tabsLimit",
+            name = "Tabs to buy",
+            position = 5,
+            description = "Amount Annakarl tps to buy.",
+            section = restockConfig,
+            hidden = true,
+            unhide = "restockTabs"
+    )
+    default int tabsLimit()
+    {
+        return 0;
+    }
+
+    @ConfigItem(
+            keyName = "restockStaminas",
+            name = "Restock Staminas",
+            position = 6,
+            description = "Buy stamina pots (1) at the ge",
+            section = restockConfig
+    )
+    default boolean restockStaminas()
+    {
+        return false;
+    }
+
+    @Range(
+            max = 2000
+    )
+    @ConfigItem(
+            keyName = "staminaLimit",
+            name = "Staminas to buy",
+            position = 7,
+            description = "Amount staminas to buy.",
+            section = restockConfig,
+            hidden = true,
+            unhide = "restockStaminas"
+    )
+    default int staminaLimit()
+    {
+        return 0;
+    }
+
+    @Units(
+            Units.PERCENT
+    )
+    @Range(
+            max = 200
+    )
+    @ConfigItem(
+            keyName = "priceBuyMultiplier",
+            name = "Buy price",
+            position = 8,
+            description = "What price items be bought at 100 being guide price. </br> 105 being guide price +5%",
+            section = restockConfig
+    )
+    default int priceBuyMultiplier()
+    {
+        return 115;
+    }
+
+    @Units(
+            Units.PERCENT
+    )
+    @Range(
+            max = 200
+    )
+    @ConfigItem(
+            keyName = "sellMultiplier",
+            name = "Sell price",
+            position = 9,
+            description = "What price items be sold at 100 being guide price. </br> 105 being guide price +5%",
+            section = restockConfig
+    )
+    default int sellMultiplier()
+    {
+        return 95;
+    }
+
+    @ConfigItem(
+            keyName = "showOverlay",
+            name = "Show overlay",
+            position = 0,
+            description = "Should the overlay be shown",
+            section = overlayConfig
+    )
+    default boolean showOverlay()
+    {
+        return true;
+    }
+
+    @ConfigItem(
+            keyName = "showStock",
+            name = "Show stock",
+            position = 1,
+            description = "Should the overlay show the stock you have left of the items it's using?",
+            section = overlayConfig
+    )
+    default boolean showStock()
+    {
+        return true;
     }
 
     @ConfigItem(

@@ -6,5 +6,8 @@ public enum States {
     usePool,
     GetSwords,
     WalkToFountain,
-    DepleteGlories
+    DepleteGlories,
+    GERestock,
+    GESell,
+    ForceAwaitErrors,
 }

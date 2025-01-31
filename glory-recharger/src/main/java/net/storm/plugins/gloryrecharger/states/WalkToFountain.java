@@ -2,9 +2,7 @@ package net.storm.plugins.gloryrecharger.states;
 
 import net.runelite.api.ItemID;
 import net.runelite.api.Varbits;
-import net.runelite.api.WorldType;
 import net.runelite.api.coords.WorldArea;
-import net.runelite.api.widgets.ComponentID;
 import net.runelite.client.eventbus.Subscribe;
 import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
@@ -14,23 +12,15 @@ import net.storm.plugins.gloryrecharger.GloryRechargerConfig;
 import net.storm.plugins.gloryrecharger.SharedContext;
 import net.storm.plugins.gloryrecharger.StateMachine;
 import net.storm.plugins.gloryrecharger.StateMachineInterface;
-import net.storm.plugins.gloryrecharger.enums.Banks;
 import net.storm.plugins.gloryrecharger.enums.FountainTransportation;
 import net.storm.plugins.gloryrecharger.enums.States;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.entities.TileObjects;
-import net.storm.sdk.game.Game;
 import net.storm.sdk.game.Vars;
-import net.storm.sdk.game.Worlds;
-import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
 import net.storm.sdk.movement.Movement;
 import net.storm.sdk.widgets.Dialog;
-import net.storm.sdk.widgets.Widgets;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class WalkToFountain implements StateMachineInterface {
     SharedContext context;
@@ -40,11 +30,6 @@ public class WalkToFountain implements StateMachineInterface {
     public WalkToFountain(SharedContext context) {
         this.context = context;
         this.config = context.getConfig();
-    }
-
-    @Subscribe
-    private void onPlayerSpawned(final PlayerSpawned event) {
-        context.hopCheck();
     }
 
     @Subscribe
