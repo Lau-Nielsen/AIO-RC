@@ -239,10 +239,9 @@ public class Setup implements StateMachineInterface {
             inventoryCheck = true;
             equipmentCheck = true;
         } else {
-            inventoryCheck = Inventory.getAll().stream().noneMatch(item -> config.altar().getValidTalismanAndTiaraIds().contains(item.getId()));
-            equipmentCheck = equipmentList.stream().noneMatch(id -> config.altar().getValidTalismanAndTiaraIds().contains(id));
+            inventoryCheck = Inventory.getAll().stream().anyMatch(item -> config.altar().getValidTalismanAndTiaraIds().contains(item.getId()));
+            equipmentCheck = equipmentList.stream().anyMatch(id -> config.altar().getValidTalismanAndTiaraIds().contains(id));
         }
-
 
         if(!config.useAbyss()) {
             if (!inventoryCheck && !equipmentCheck) {
