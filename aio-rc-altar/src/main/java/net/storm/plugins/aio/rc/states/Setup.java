@@ -38,7 +38,7 @@ public class Setup implements StateMachineInterface {
     private boolean forceAddressErrors = false;
 
     private void questCheck(Quest quest, Altar altar) {
-        if (config.runes() == altar && !Quests.isFinished(quest)) {
+        if (config.altar() == altar && !Quests.isFinished(quest)) {
             MessageUtils.addMessage("You cannot  " +
                             (config.isRunner() ? "run essences to " + altar.name()  : "craft " + altar.name() + " runes") +
                             " without completion of" +
@@ -231,18 +231,18 @@ public class Setup implements StateMachineInterface {
             equipmentList.add(ItemID.ELEMENTAL_TIARA);
         }
 
-        if(config.runes() == Altar.ASTRAL) {
+        if(config.altar() == Altar.ASTRAL) {
             inventoryCheck = true;
             equipmentCheck = true;
         } else {
-            inventoryCheck = Inventory.getAll().stream().noneMatch(item -> config.runes().getValidTalismanAndTiaraIds().contains(item.getId()));
-            equipmentCheck = equipmentList.stream().noneMatch(id -> config.runes().getValidTalismanAndTiaraIds().contains(id));
+            inventoryCheck = Inventory.getAll().stream().noneMatch(item -> config.altar().getValidTalismanAndTiaraIds().contains(item.getId()));
+            equipmentCheck = equipmentList.stream().noneMatch(id -> config.altar().getValidTalismanAndTiaraIds().contains(id));
         }
 
 
         if(!config.useAbyss()) {
             if (!inventoryCheck && !equipmentCheck) {
-                MessageUtils.addMessage("You do not have a talisman or tiara that gives you access to: " + config.runes().name());
+                MessageUtils.addMessage("You do not have a talisman or tiara that gives you access to: " + config.altar().name());
                 forceAddressErrors = true;
             }
         }

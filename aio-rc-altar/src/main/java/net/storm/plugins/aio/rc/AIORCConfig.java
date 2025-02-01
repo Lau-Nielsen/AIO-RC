@@ -109,7 +109,7 @@ public interface AIORCConfig extends Config {
             position = 1,
             description = "Name of the altar to run to"
     )
-    default Altar runes() {
+    default Altar altar() {
         return Altar.AIR;
     }
 

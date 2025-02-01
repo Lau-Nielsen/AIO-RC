@@ -277,7 +277,7 @@ public class SharedContext {
     }
 
     public void setComboRuneRequirementIds() {
-        if (this.config.runes().name().equals("AIR")) {
+        if (this.config.altar().name().equals("AIR")) {
             if (this.config.airCombo() != AirRunes.AIR_RUNE) {
                 runeNeededForComboRunesId = this.config.airCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
@@ -286,7 +286,7 @@ public class SharedContext {
             }
         }
 
-        if (this.config.runes().name().equals("EARTH")) {
+        if (this.config.altar().name().equals("EARTH")) {
             if (this.config.earthCombo() != EarthRunes.EARTH_RUNE) {
                 runeNeededForComboRunesId = this.config.earthCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
@@ -295,7 +295,7 @@ public class SharedContext {
             }
         }
 
-        if (this.config.runes().name().equals("FIRE")) {
+        if (this.config.altar().name().equals("FIRE")) {
             if (this.config.fireCombo() != FireRunes.FIRE_RUNE) {
                 this.runeNeededForComboRunesId = this.config.fireCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
@@ -304,7 +304,7 @@ public class SharedContext {
             }
         }
 
-        if (this.config.runes().name().equals("WATER")) {
+        if (this.config.altar().name().equals("WATER")) {
             if (this.config.waterCombo() != WaterRunes.WATER_RUNES) {
                 this.runeNeededForComboRunesId = this.config.waterCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
@@ -328,16 +328,16 @@ public class SharedContext {
     }
 
     public void checkCurrentRuneBeingCrafted() {
-        if (this.config.runes().name().equals("AIR")) {
+        if (this.config.altar().name().equals("AIR")) {
             this.currentlyCrafting = this.config.airCombo().getRune();
-        } else if (this.config.runes().name().equals("EARTH")) {
+        } else if (this.config.altar().name().equals("EARTH")) {
             this.currentlyCrafting = this.config.earthCombo().getRune();
-        } else if (this.config.runes().name().equals("FIRE")) {
+        } else if (this.config.altar().name().equals("FIRE")) {
             this.currentlyCrafting = this.config.fireCombo().getRune();
-        } else if (this.config.runes().name().equals("WATER")) {
+        } else if (this.config.altar().name().equals("WATER")) {
             this.currentlyCrafting = this.config.waterCombo().getRune();
         } else {
-            this.currentlyCrafting = this.config.runes().getRune();
+            this.currentlyCrafting = this.config.altar().getRune();
         }
     }
 

@@ -121,7 +121,7 @@ public class WalkToAltar implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine) {
-        Altar altar = config.runes();
+        Altar altar = config.altar();
         boolean closeToAltar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 20, altar.getAltarID()) != null;
         IPlayer localPlayer = Players.getLocal();
 
@@ -175,7 +175,7 @@ public class WalkToAltar implements StateMachineInterface {
             }
 
             if (abyssalRift != null && abyssalRift.distanceTo(myWorldPoint) < 14) {
-                ITileObject runeRift = TileObjects.getNearest(x -> x.getId() == config.runes().getAbyssRiftID());
+                ITileObject runeRift = TileObjects.getNearest(x -> x.getId() == config.altar().getAbyssRiftID());
                 INPC darkMage = NPCs.getNearest(x -> x.hasAction("Repairs"));
 
                 if(context.hasBrokenPouch()

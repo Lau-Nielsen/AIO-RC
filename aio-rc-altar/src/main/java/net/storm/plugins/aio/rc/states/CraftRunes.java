@@ -108,7 +108,7 @@ public class CraftRunes implements StateMachineInterface {
     }
 
     private void craftRunes(SharedContext context) {
-        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 20, context.getConfig().runes().getAltarID());
+        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 20, context.getConfig().altar().getAltarID());
         if(context.getRuneNeededForComboRunesId() != null) {
             Inventory.getFirst(context.getRuneNeededForComboRunesId()).useOn(altar);
         } else {
@@ -119,7 +119,7 @@ public class CraftRunes implements StateMachineInterface {
 
     @Override
     public void handleState(StateMachine stateMachine) {
-        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 4, context.getConfig().runes().getAltarID());
+        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 4, context.getConfig().altar().getAltarID());
 
         if(Inventory.contains(ItemID.BINDING_NECKLACE) && !Dialog.isOpen()) {
             if (!Equipment.contains(ItemID.BINDING_NECKLACE)) {

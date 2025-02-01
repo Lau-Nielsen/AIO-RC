@@ -58,7 +58,7 @@ class AIORCOverlay extends OverlayPanel
                 {
                     panelComponent.getChildren().add(LineComponent.builder()
                             .left("Current altar:")
-                            .right(config.runes().name())
+                            .right(config.altar().name())
                             .build());
                 }
             }
