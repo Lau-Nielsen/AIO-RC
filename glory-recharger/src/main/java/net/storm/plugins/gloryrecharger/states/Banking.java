@@ -7,6 +7,7 @@ import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.plugins.commons.enums.RunningState;
 import net.storm.plugins.commons.utils.BankUtils;
+import net.storm.plugins.commons.utils.TpJewelry;
 import net.storm.plugins.commons.utils.WildyUtils;
 import net.storm.plugins.gloryrecharger.GloryRechargerConfig;
 import net.storm.plugins.gloryrecharger.SharedContext;
@@ -33,8 +34,10 @@ public class Banking implements StateMachineInterface {
         this.context = context;
         this.config = context.getConfig();
     }
+
     WildyUtils wildyUtils = new WildyUtils();
     BankUtils bankUtils = new BankUtils();
+    TpJewelry tpJewelry = new TpJewelry();
 
     private void obeliskHomeRoute() {
         WorldArea rougesCastle = new WorldArea(3305, 3915, 3, 3, 0);
@@ -81,13 +84,13 @@ public class Banking implements StateMachineInterface {
         Bank.depositInventory();
         switch(config.geTransportation()) {
             case GLORY:
-                Bank.withdraw(ItemID.AMULET_OF_GLORY6, 1);
+                bankUtils.withdraw(tpJewelry.getChargedGloryPredicate(), 1);
                 break;
             case POH_TAB:
                 Bank.withdraw(ItemID.TELEPORT_TO_HOUSE, 1);
                 break;
             case RING_OF_WEALTH:
-                Bank.withdraw(ItemID.RING_OF_WEALTH_5, 1);
+                bankUtils.withdraw(tpJewelry.getChargedRingOfWealthPredicate(), 1);
                 break;
             case VARROCK_TAB:
                 Bank.withdraw(ItemID.VARROCK_TELEPORT, 1);
@@ -98,7 +101,7 @@ public class Banking implements StateMachineInterface {
 
         // Withdraw a dueling ring to get back to FEROX
         if(config.bank() == Banks.FEROX_ENCLAVE_BANK) {
-            Bank.withdraw(i -> i.getName() != null && i.getName().contains("Ring of dueling"), 1);
+            bankUtils.withdraw(tpJewelry.getDuelingRingPredicate(), 1);
         }
     }
 
@@ -218,11 +221,9 @@ public class Banking implements StateMachineInterface {
             }
 
             bankUtils.depositAll(ItemID.AMULET_OF_ETERNAL_GLORY);
-            bankUtils.depositAll(ItemID.AMULET_OF_GLORY5);
-            bankUtils.depositAll(ItemID.AMULET_OF_GLORY6);
-
-            bankUtils.depositAll(i -> i.getName() != null && i.getName().contains("Ring of wealth"));
-            bankUtils.depositAll(i -> i.getName() != null && i.getName().contains("Ring of dueling"));
+            bankUtils.depositAll(tpJewelry.getChargedGloryPredicate());
+            bankUtils.depositAll(tpJewelry.getRingOfWealthPredicate());
+            bankUtils.depositAll(tpJewelry.getDuelingRingPredicate());
 
             withdrawAndDrinkStamina(stateMachine);
 

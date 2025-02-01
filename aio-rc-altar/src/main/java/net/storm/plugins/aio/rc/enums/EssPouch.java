@@ -136,4 +136,8 @@ public enum EssPouch
         Inventory.getFirst(itemID).interact("Empty");
     }
 
+    public boolean isFull() {
+        return this.getAmount() >= this.maxAmount();
+    }
+
 }

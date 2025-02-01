@@ -6,7 +6,6 @@ import net.storm.api.items.loadouts.LoadoutItem;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
-import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
@@ -197,7 +196,7 @@ public class BankSetupAndStock implements StateMachineInterface {
             context.setUsingEternalGlory(context.checkForEternalGlory());
 
             // Combo rune requirement checks
-            context.setComboRuneRequirementIds();
+            context.checkComboRuneRequirements();
             if(context.getTalismanIDNeededForComboRune() != null && !context.getConfig().bringBindingNecklace()) {
                 context.checkRequiredTalismansInBank();
             }

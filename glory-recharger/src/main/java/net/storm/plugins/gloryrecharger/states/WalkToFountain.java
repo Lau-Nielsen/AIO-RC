@@ -9,6 +9,7 @@ import net.storm.api.domain.actors.IPlayer;
 import net.storm.api.domain.tiles.ITileObject;
 import net.storm.api.events.InventoryChanged;
 import net.storm.api.magic.SpellBook;
+import net.storm.api.movement.pathfinder.model.BankLocation;
 import net.storm.plugins.commons.utils.WildyUtils;
 import net.storm.plugins.gloryrecharger.GloryRechargerConfig;
 import net.storm.plugins.gloryrecharger.SharedContext;

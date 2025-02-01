@@ -27,7 +27,7 @@ public class DepleteGlories implements StateMachineInterface {
     private void gloryTp(){
         IPlayer localPlayer = Players.getLocal();
         if(!localPlayer.isAnimating() && !Dialog.isOpen()) {
-            Inventory.getFirst(tpJewelry.getGloryIds()).interact("Rub");
+            Inventory.getFirst(tpJewelry.getChargedGloryIds()).interact("Rub");
         } else if (Dialog.isOpen()) {
             int randomNumber = (int) (Math.random() * 4) + 1;
 
@@ -38,14 +38,14 @@ public class DepleteGlories implements StateMachineInterface {
     @Override
     public void handleState(StateMachine stateMachine) {
         IPlayer localPlayer = Players.getLocal();
-        boolean containsTpableGlories = Inventory.contains(tpJewelry.getGloryIds());
+        boolean containsTpableGlories = Inventory.contains(tpJewelry.getChargedGloryIds());
 
         if(Inventory.contains(ItemID.AMULET_OF_ETERNAL_GLORY) && config.stopOnEternal()) {
             context.setCurrentRunningState(RunningState.STOPPED);
         }
 
         if(containsTpableGlories) {
-            if (Inventory.getCount(false, tpJewelry.getGloryIds()) > 1) {
+            if (Inventory.getCount(false, tpJewelry.getChargedGloryIds()) > 1) {
                 gloryTp();
             } else if (!Inventory.contains(ItemID.AMULET_OF_GLORY1)) {
                 gloryTp();

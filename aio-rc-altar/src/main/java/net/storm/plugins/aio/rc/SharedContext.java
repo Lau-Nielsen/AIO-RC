@@ -64,7 +64,7 @@ public class SharedContext {
     public boolean checkForDuelingRing() {
         Collection<Integer> ringIds = ItemVariationMapping.getVariations(ItemVariationMapping.map(ItemID.RING_OF_DUELING8));
 
-        boolean isInEquipment = Equipment.contains(i -> ringIds.contains(i.getId()));;
+        boolean isInEquipment = Equipment.contains(i -> ringIds.contains(i.getId()));
         boolean isInInv = Inventory.contains(i -> ringIds.contains(i.getId()));
 
         return isInEquipment || isInInv;
@@ -73,21 +73,21 @@ public class SharedContext {
     public boolean checkForGlories() {
         Collection<Integer> amuletIds = ItemVariationMapping.getVariations(ItemVariationMapping.map(ItemID.AMULET_OF_GLORY6));
 
-        boolean isInEquipment = Equipment.contains(i -> amuletIds.contains(i.getId()));;
+        boolean isInEquipment = Equipment.contains(i -> amuletIds.contains(i.getId()));
         boolean isInInv = Inventory.contains(i -> amuletIds.contains(i.getId()));
 
         return isInEquipment || isInInv;
     }
 
     public boolean checkForEternalGlory() {
-        boolean isInEquipment = Equipment.contains(ItemID.AMULET_OF_ETERNAL_GLORY);;
+        boolean isInEquipment = Equipment.contains(ItemID.AMULET_OF_ETERNAL_GLORY);
         boolean isInInv = Inventory.contains(ItemID.AMULET_OF_ETERNAL_GLORY);
 
         return isInEquipment || isInInv;
     }
 
     public boolean checkForRingOfElements() {
-        boolean isInEquipment = Equipment.contains(ItemID.RING_OF_THE_ELEMENTS_26818);;
+        boolean isInEquipment = Equipment.contains(ItemID.RING_OF_THE_ELEMENTS_26818);
         boolean isInInv = Inventory.contains(ItemID.RING_OF_THE_ELEMENTS_26818);
 
         return isInEquipment || isInInv;
@@ -97,25 +97,25 @@ public class SharedContext {
         return Inventory.contains(ItemID.SMALL_POUCH);
     }
 
-    public boolean checkForMediumPouch() {
-        Collection<Integer> pouchIds = ItemVariationMapping.getVariations(ItemVariationMapping.map(ItemID.MEDIUM_POUCH));
+    private boolean checkForPouch(int itemId) {
+        Collection<Integer> pouchIds = ItemVariationMapping.getVariations(ItemVariationMapping.map(itemId));
         return Inventory.contains(i -> pouchIds.contains(i.getId()));
+    }
+
+    public boolean checkForMediumPouch() {
+        return checkForPouch(ItemID.MEDIUM_POUCH);
     }
 
     public boolean checkForLargePouch() {
-        Collection<Integer> pouchIds = ItemVariationMapping.getVariations(ItemVariationMapping.map(ItemID.LARGE_POUCH));
-        return Inventory.contains(i -> pouchIds.contains(i.getId()));
-
+        return checkForPouch(ItemID.LARGE_POUCH);
     }
 
     public boolean checkForGiantPouch() {
-        Collection<Integer> pouchIds = ItemVariationMapping.getVariations(ItemVariationMapping.map(ItemID.GIANT_POUCH));
-        return Inventory.contains(i -> pouchIds.contains(i.getId()));
+        return checkForPouch(ItemID.GIANT_POUCH);
     }
 
     public boolean checkForColossalPouch() {
-        Collection<Integer> pouchIds = ItemVariationMapping.getVariations(ItemVariationMapping.map(ItemID.COLOSSAL_POUCH));
-        return Inventory.contains(i -> pouchIds.contains(i.getId()));
+        return checkForPouch(ItemID.COLOSSAL_POUCH);
     }
 
     public void checkBindingNecklacesInBank() {
@@ -125,7 +125,8 @@ public class SharedContext {
     }
 
     public void checkChargesOnRote() {
-        this.chargesOnRingOfElement = Vars.getBit(13707);
+        int ROTE_CHARGES_VARBIT_ID = 13707;
+        this.chargesOnRingOfElement = Vars.getBit(ROTE_CHARGES_VARBIT_ID);
     }
 
     public void checkEssenceInBank() {
@@ -140,20 +141,14 @@ public class SharedContext {
 
     public void checkTotalEssencesInInv() {
         this.totalEssencesInInv = 0;
-        if (this.isUsingSmallPouch) {
-            this.totalEssencesInInv += EssPouch.SMALL.getAmount();
-        }
-        if(this.isUsingMediumPouch) {
-            this.totalEssencesInInv += EssPouch.MEDIUM.getAmount();
-        }
-        if(this.isUsingLargePouch) {
-            this.totalEssencesInInv += EssPouch.LARGE.getAmount();
-        }
-        if(this.isUsingGiantPouch) {
-            this.totalEssencesInInv += EssPouch.GIANT.getAmount();
-        }
-        if(this.isUsingColossalPouch) {
-            this.totalEssencesInInv += EssPouch.COLOSSAL.getAmount();
+
+        EssPouch[] pouches = {EssPouch.SMALL, EssPouch.MEDIUM, EssPouch.LARGE, EssPouch.GIANT, EssPouch.COLOSSAL};
+        boolean[] isUsingPouch = {isUsingSmallPouch, isUsingMediumPouch, isUsingLargePouch, isUsingGiantPouch, isUsingColossalPouch};
+
+        for (int i = 0; i < pouches.length; i++) {
+            if (isUsingPouch[i]) {
+                this.totalEssencesInInv += pouches[i].getAmount();
+            }
         }
 
         this.totalEssencesInInv += Inventory.getCount(false, ItemID.PURE_ESSENCE);
@@ -174,39 +169,17 @@ public class SharedContext {
     public void checkIfHatIsCatalytic() {
         if(Equipment.contains(ItemID.HAT_OF_THE_EYE, ItemID.HAT_OF_THE_EYE_BLUE, ItemID.HAT_OF_THE_EYE_GREEN,
                 ItemID.HAT_OF_THE_EYE_RED)) {
-            int hatOfTheEyeAtonementID = 13709;
-            this.isHatOfTheEyeCatalytic = Vars.getBit(hatOfTheEyeAtonementID) == 15;
+            int HAT_OF_THE_EYE_VARBIT_ID  = 13709;
+            this.isHatOfTheEyeCatalytic = Vars.getBit(HAT_OF_THE_EYE_VARBIT_ID) == 15;
         }
     }
 
     public boolean arePouchesFull() {
-        EssPouch small = EssPouch.SMALL;
-        EssPouch medium = EssPouch.MEDIUM;
-        EssPouch large = EssPouch.LARGE;
-        EssPouch giant = EssPouch.GIANT;
-        EssPouch colossal = EssPouch.COLOSSAL;
-
-        if (this.isUsingSmallPouch() && small.maxAmount() != small.getAmount()) {
-            return false;
-        }
-
-        if (this.isUsingMediumPouch() && medium.maxAmount() != medium.getAmount()) {
-            return false;
-        }
-
-        if (this.isUsingLargePouch() && large.maxAmount() != large.getAmount()) {
-            return false;
-        }
-
-        if (this.isUsingGiantPouch() && giant.maxAmount() != giant.getAmount()) {
-            return false;
-        }
-
-        if (this.isUsingColossalPouch() && colossal.maxAmount() != colossal.getAmount()) {
-            return false;
-        }
-
-        return true;
+        return (!isUsingSmallPouch || EssPouch.SMALL.isFull())
+                && (!isUsingMediumPouch || EssPouch.MEDIUM.isFull())
+                && (!isUsingLargePouch || EssPouch.LARGE.isFull())
+                && (!isUsingGiantPouch || EssPouch.GIANT.isFull())
+                && (!isUsingColossalPouch || EssPouch.COLOSSAL.isFull());
     }
 
     public boolean hasBrokenPouch() {
@@ -216,24 +189,14 @@ public class SharedContext {
 
     public int maxEssenceCapacity() {
         int capacity = 0;
-        if (this.isUsingSmallPouch() ) {
-            capacity += EssPouch.SMALL.maxAmount();
-        }
 
-        if (this.isUsingMediumPouch() ) {
-            capacity += EssPouch.MEDIUM.maxAmount();
-        }
+        EssPouch[] pouches = {EssPouch.SMALL, EssPouch.MEDIUM, EssPouch.LARGE, EssPouch.GIANT, EssPouch.COLOSSAL};
+        boolean[] isUsingPouch = {isUsingSmallPouch, isUsingMediumPouch, isUsingLargePouch, isUsingGiantPouch, isUsingColossalPouch};
 
-        if (this.isUsingLargePouch()) {
-            capacity += EssPouch.LARGE.maxAmount();
-        }
-
-        if (this.isUsingGiantPouch()) {
-            capacity += EssPouch.GIANT.maxAmount();
-        }
-
-        if (this.isUsingColossalPouch()) {
-            capacity += EssPouch.COLOSSAL.maxAmount();
+        for (int i = 0; i < pouches.length; i++) {
+            if (isUsingPouch[i]) {
+                capacity += pouches[i].maxAmount();
+            }
         }
 
         capacity += Inventory.getCount(false, ItemID.PURE_ESSENCE);
@@ -242,41 +205,31 @@ public class SharedContext {
         return capacity;
     }
 
-    public void setComboRuneRequirementIds() {
-        if (this.config.altar().name().equals("AIR")) {
-            if (this.config.airCombo() != AirRunes.AIR_RUNE) {
-                oppositeRuneIDForComboRune = this.config.airCombo().getOppositeRuneId();
-                if(!this.config.bringBindingNecklace()) {
-                    talismanIDNeededForComboRune = this.config.airCombo().getOppositeTalismanId();
-                }
-            }
+    private void setComboRuneRequirementIds(int talismanID, int runeID) {
+        this.oppositeRuneIDForComboRune = runeID;
+        if (!this.config.bringBindingNecklace()) {
+            this.talismanIDNeededForComboRune = talismanID;
         }
+    }
 
-        if (this.config.altar().name().equals("EARTH")) {
-            if (this.config.earthCombo() != EarthRunes.EARTH_RUNE) {
-                oppositeRuneIDForComboRune = this.config.earthCombo().getOppositeRuneId();
-                if(!this.config.bringBindingNecklace()) {
-                    talismanIDNeededForComboRune = this.config.earthCombo().getOppositeTalismanId();
-                }
-            }
-        }
-
-        if (this.config.altar().name().equals("FIRE")) {
-            if (this.config.fireCombo() != FireRunes.FIRE_RUNE) {
-                this.oppositeRuneIDForComboRune = this.config.fireCombo().getOppositeRuneId();
-                if(!this.config.bringBindingNecklace()) {
-                    talismanIDNeededForComboRune = this.config.fireCombo().getOppositeTalismanId();
-                }
-            }
-        }
-
-        if (this.config.altar().name().equals("WATER")) {
-            if (this.config.waterCombo() != WaterRunes.WATER_RUNES) {
-                this.oppositeRuneIDForComboRune = this.config.waterCombo().getOppositeRuneId();
-                if(!this.config.bringBindingNecklace()) {
-                    this.talismanIDNeededForComboRune = this.config.waterCombo().getOppositeTalismanId();
-                }
-            }
+    public void checkComboRuneRequirements() {
+        switch (this.config.altar()) {
+            case AIR:
+                setComboRuneRequirementIds(this.config.airCombo().getOppositeTalismanId(), this.config.airCombo().getOppositeRuneId());
+                break;
+            case EARTH:
+                setComboRuneRequirementIds( this.config.earthCombo().getOppositeTalismanId(), this.config.earthCombo().getOppositeRuneId());
+                break;
+            case FIRE:
+                setComboRuneRequirementIds(this.config.fireCombo().getOppositeTalismanId(), this.config.fireCombo().getOppositeRuneId());
+                break;
+            case WATER:
+                setComboRuneRequirementIds(this.config.waterCombo().getOppositeTalismanId(), this.config.waterCombo().getOppositeRuneId());
+                break;
+            default:
+                this.oppositeRuneIDForComboRune = null;
+                this.talismanIDNeededForComboRune = null;
+                break;
         }
     }
 
@@ -294,16 +247,22 @@ public class SharedContext {
     }
 
     public void checkCurrentRuneBeingCrafted() {
-        if (this.config.altar().name().equals("AIR")) {
-            this.currentlyCrafting = this.config.airCombo().getRune();
-        } else if (this.config.altar().name().equals("EARTH")) {
-            this.currentlyCrafting = this.config.earthCombo().getRune();
-        } else if (this.config.altar().name().equals("FIRE")) {
-            this.currentlyCrafting = this.config.fireCombo().getRune();
-        } else if (this.config.altar().name().equals("WATER")) {
-            this.currentlyCrafting = this.config.waterCombo().getRune();
-        } else {
-            this.currentlyCrafting = this.config.altar().getRune();
+        switch (this.config.altar()) {
+            case AIR:
+                this.currentlyCrafting = this.config.airCombo().getRune();
+                break;
+            case EARTH:
+                this.currentlyCrafting = this.config.earthCombo().getRune();
+                break;
+            case FIRE:
+                this.currentlyCrafting = this.config.fireCombo().getRune();
+                break;
+            case WATER:
+                this.currentlyCrafting = this.config.waterCombo().getRune();
+                break;
+            default:
+                this.currentlyCrafting = this.config.altar().getRune();
+                break;
         }
     }
 
