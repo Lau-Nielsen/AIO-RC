@@ -2,8 +2,6 @@ package net.storm.plugins.aio.rc.states;
 
 import lombok.Setter;
 import net.runelite.api.ItemID;
-import net.storm.api.events.AnimationChanged;
-import net.storm.api.widgets.EquipmentSlot;
 import net.storm.plugins.aio.rc.AIORCConfig;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
@@ -11,7 +9,8 @@ import net.storm.plugins.aio.rc.StateMachineInterface;
 import net.storm.plugins.commons.enums.RunningState;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.plugins.aio.rc.enums.EssPouch;
-import net.storm.sdk.entities.Players;
+import net.storm.plugins.commons.utils.BankUtils;
+import net.storm.plugins.commons.utils.TpJewelry;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
 import net.storm.sdk.items.Inventory;
@@ -26,62 +25,48 @@ public class Banking implements StateMachineInterface {
     private final SharedContext context;
     private final AIORCConfig config;
 
+    BankUtils bankUtils = new BankUtils();
+    TpJewelry tpJewelry = new TpJewelry();
+
     public Banking(final SharedContext context) {
         this.context = context;
         this.config = context.getConfig();
     }
 
-    public void onAnimationChanged(AnimationChanged e) {
-        if(e.getActor().getId() == Players.getLocal().getId() && e.getActor().getAnimation() == 829) {
-
-            e.getActor().setAnimation(-1);
-        }
-    }
-
     private void withdrawAndDrinkStamina() {
-        int stam_1 = ItemID.STAMINA_POTION1;
-        int stam_2 = ItemID.STAMINA_POTION2;
-        int stam_3 = ItemID.STAMINA_POTION3;
-        int stam_4 = ItemID.STAMINA_POTION4;
-
-
         if(config.useStamina()) {
-            if (Bank.contains(stam_1, stam_2, stam_3, stam_4)) {
-                if(Movement.getRunEnergy() <= config.staminaThreshold() &&
-                        !Movement.isStaminaBoosted() &&
-                        Bank.isOpen() &&
-                        !Bank.Inventory.contains(stam_1, stam_2, stam_3, stam_4)) {
-                    Bank.withdraw(ItemID.STAMINA_POTION1, 1);
-                }
-
-                if(Bank.Inventory.contains(stam_1, stam_2, stam_3, stam_4) && !Movement.isStaminaBoosted()) {
-                    Bank.Inventory.getFirst(stam_1, stam_2, stam_3, stam_4).interact("Drink");
-                } else if (Movement.isStaminaBoosted() && Bank.Inventory.contains(stam_1, stam_2, stam_3, stam_4)) {
-                    Bank.depositAll(stam_1, stam_2, stam_3, stam_4);
-                }
-            } else {
+            if (!Bank.contains(i -> i.getName() != null && i.getName().contains("Stamina potion"))) {
                 context.setCurrentRunningState(RunningState.STOPPED);
                 MessageUtils.addMessage("Out of staminas, stopping plugin", Color.red);
+                return;
+            }
+
+            if(Movement.getRunEnergy() <= config.staminaThreshold() && !Movement.isStaminaBoosted()) {
+                bankUtils.withdrawAndDrinkStamina();
+            } else {
+                bankUtils.depositStamina();
             }
         }
     }
 
     private void bankForBindingNecklace() {
-        if(config.bringBindingNecklace() &&
-                context.getTripsCompleted().get() % config.bindingNecklaceFrequency() == 0) {
-            if(!Bank.contains(ItemID.BINDING_NECKLACE)) {
-                context.setCurrentRunningState(RunningState.STOPPED);
-                MessageUtils.addMessage("Out of binding necklaces, stopping plugin", Color.red);
-            }
+        if(config.bringBindingNecklace()) {
+            if(context.getTripsCompleted().get() % config.bindingNecklaceFrequency() == 0) {
+                if(!Bank.contains(ItemID.BINDING_NECKLACE)) {
+                    context.setCurrentRunningState(RunningState.STOPPED);
+                    MessageUtils.addMessage("Out of binding necklaces, stopping plugin", Color.red);
+                    return;
+                }
 
-            if(!Bank.Inventory.contains(ItemID.BINDING_NECKLACE)) {
-                Bank.withdraw(ItemID.BINDING_NECKLACE, 1);
+                if(!Bank.Inventory.contains(ItemID.BINDING_NECKLACE)) {
+                    bankUtils.withdraw(ItemID.BINDING_NECKLACE, 1);
+                }
             }
         }
     }
 
     private void bankForTalisman() {
-        Integer talismanId = context.getTalismanNeededForComboRunes();
+        Integer talismanId = context.getTalismanIDNeededForComboRune();
         int amountToWithdraw = context.talismansToWithdraw();
 
         if (!config.useImbue() && talismanId != null &&
@@ -107,13 +92,14 @@ public class Banking implements StateMachineInterface {
             essenceID = ItemID.PURE_ESSENCE;
         }
 
-        if(Bank.contains(essenceID)) {
-            if (Bank.Inventory.getCount(false, essenceID) <= countCheck) {
-                Bank.withdrawAll(essenceID);
-            }
-        } else {
+        if(!Bank.contains(essenceID)) {
             context.setCurrentRunningState(RunningState.STOPPED);
             MessageUtils.addMessage("Out of essences, stopping plugin", Color.red);
+            return;
+        }
+
+        if (Bank.Inventory.getCount(false, essenceID) <= countCheck) {
+            bankUtils.withdrawAll(essenceID);
         }
     }
 
@@ -163,57 +149,51 @@ public class Banking implements StateMachineInterface {
 
     private void depositRunes() {
         int runeId = context.getCurrentlyCrafting().getItemID();
-        if (Bank.Inventory.contains(runeId) && config.bankCraftedRunes()) {
-           Bank.depositAll(runeId);
+        if (config.bankCraftedRunes()) {
+           bankUtils.depositAll(runeId);
         }
     }
 
     private void withdrawAndEquipDuelingRing() {
-        int duelingId = ItemID.RING_OF_DUELING8;
-        if (context.isUsingDuelingRings() && !context.checkForDuelingRing()) {
-            if(!Bank.contains(duelingId)) {
+        if (context.isUsingDuelingRings() && !Equipment.contains(tpJewelry.getDuelingRingPredicate())) {
+            if(!Bank.contains(tpJewelry.getDuelingRingIds())) {
                 context.setCurrentRunningState(RunningState.STOPPED);
                 MessageUtils.addMessage("Out of dueling rings, stopping plugin", Color.red);
-            } else {
-                Bank.withdraw(duelingId, 1);
+                return;
             }
-        }
 
-        if(Bank.Inventory.contains(duelingId) && config.loadout().equipmentItemsIds().contains(duelingId)) {
-            Bank.Inventory.getFirst(duelingId).interact("Wear");
+            bankUtils.withdrawAndEquip(tpJewelry.getDuelingRingPredicate());
         }
     }
 
     private void withdrawAndEquipGlory() {
-        int gloryID = ItemID.AMULET_OF_GLORY6;
-        if (context.isUsingGlories() && (Bank.Inventory.contains(ItemID.AMULET_OF_GLORY) ||
-                Equipment.contains(ItemID.AMULET_OF_GLORY)) && Bank.contains(gloryID)) {
-            if(Bank.contains(gloryID)) {
-                Equipment.fromSlot(EquipmentSlot.AMULET).interact("Remove");
-                Bank.withdraw(gloryID, 1);
-
-                if(Bank.Inventory.contains(ItemID.AMULET_OF_GLORY6)) {
-                    Bank.Inventory.getFirst(gloryID).interact("Wear");
-                }
-            } else {
+        if (context.isUsingGlories()) {
+            if(!Bank.contains(tpJewelry.getChargedGloryPredicate())) {
                 context.setCurrentRunningState(RunningState.STOPPED);
                 MessageUtils.addMessage("Out of glories, stopping plugin", Color.red);
+                return;
             }
-        }
 
-        if (Bank.Inventory.contains(ItemID.AMULET_OF_GLORY)) {
-            Bank.deposit(ItemID.AMULET_OF_GLORY, 1);
+            if(!Equipment.contains(tpJewelry.getChargedGloryPredicate())) {
+                bankUtils.withdrawAndEquip(tpJewelry.getChargedGloryPredicate());
+                return;
+            }
+
+            bankUtils.deposit(ItemID.AMULET_OF_GLORY, 1);
         }
     }
 
     private void withdrawRunesForComboRunes(){
-        if(!Bank.Inventory.contains(context.getRuneNeededForComboRunesId())) {
-            if(Bank.contains(context.getRuneNeededForComboRunesId())) {
-                Bank.withdrawAll(context.getRuneNeededForComboRunesId());
-            } else {
+        int runeId = context.getOppositeRuneIDForComboRune();
+
+        if(!Bank.Inventory.contains(runeId)) {
+            if(!Bank.contains(runeId)) {
                 context.setCurrentRunningState(RunningState.STOPPED);
                 MessageUtils.addMessage("Out of runes needed for combo runes, stopping plugin", Color.red);
+                return;
             }
+
+            Bank.withdrawAll(runeId);
         }
     }
 
@@ -221,6 +201,10 @@ public class Banking implements StateMachineInterface {
     public void handleState(StateMachine stateMachine) {
         if (!Bank.isOpen()) {
             Bank.open(config.bank().getBankLocation());
+        }
+
+        if(context.checkForBrokenPouch() && !config.repairOnDarkMage()) {
+            stateMachine.setState(new RepairPouch(context), false);
         }
 
         if (Bank.isOpen()) {
@@ -240,9 +224,7 @@ public class Banking implements StateMachineInterface {
 
         if(context.maxEssenceCapacity() == context.getTotalEssencesInInv()) {
             Bank.close();
-            if(context.checkForBrokenPouch()) {
-                stateMachine.setState(new RepairPouch(context), false);
-            } else if (config.usePoolAtFerox()) {
+            if (config.usePoolAtFerox()) {
                 stateMachine.setState(new UseFeroxPool(context), true);
             } else {
                 stateMachine.setState(new WalkToAltar(context), true);

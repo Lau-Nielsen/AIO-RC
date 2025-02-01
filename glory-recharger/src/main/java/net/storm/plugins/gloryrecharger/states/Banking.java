@@ -117,8 +117,9 @@ public class Banking implements StateMachineInterface {
 
             if(Movement.getRunEnergy() <= config.staminaThreshold() && !Movement.isStaminaBoosted()) {
                 bankUtils.withdrawAndDrinkStamina();
+            } else {
+                bankUtils.depositStamina();
             }
-            bankUtils.depositStamina();
         }
     }
 

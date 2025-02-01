@@ -68,14 +68,7 @@ public class CraftRunes implements StateMachineInterface {
         }
     }
 
-    @Subscribe
-    public void onAnimationChanged(AnimationChanged e) {
-//        if(e.getActor().getId() == Players.getLocal().getId() && e.getActor().getAnimation() == 791) {
-//            e.getActor().setAnimation(-1);
-//        }
-    }
-
-    private boolean hasSpace(int amount) {
+    private boolean hasInventorySpaceRequired(int amount) {
         return Inventory.getFreeSlots() > amount;
     }
 
@@ -86,19 +79,19 @@ public class CraftRunes implements StateMachineInterface {
         EssPouch giant = EssPouch.GIANT;
         EssPouch colossal = EssPouch.COLOSSAL;
 
-        if(context.isUsingSmallPouch() && small.getAmount() > 0 && hasSpace(small.getAmount())) {
+        if(context.isUsingSmallPouch() && small.getAmount() > 0 && hasInventorySpaceRequired(small.getAmount())) {
             small.empty();
         }
 
-        if (context.isUsingGiantPouch() && giant.getAmount() > 0 && hasSpace(giant.getAmount())) {
+        if (context.isUsingGiantPouch() && giant.getAmount() > 0 && hasInventorySpaceRequired(giant.getAmount())) {
             giant.empty();
         }
 
-        if (context.isUsingMediumPouch() && medium.getAmount() > 0 && hasSpace(medium.getAmount())) {
+        if (context.isUsingMediumPouch() && medium.getAmount() > 0 && hasInventorySpaceRequired(medium.getAmount())) {
             medium.empty();
         }
 
-        if (context.isUsingLargePouch() && large.getAmount() > 0 && hasSpace(large.getAmount())) {
+        if (context.isUsingLargePouch() && large.getAmount() > 0 && hasInventorySpaceRequired(large.getAmount())) {
             large.empty();
         }
 
@@ -108,45 +101,42 @@ public class CraftRunes implements StateMachineInterface {
     }
 
     private void craftRunes(SharedContext context) {
-        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 20, context.getConfig().altar().getAltarID());
-        if(context.getRuneNeededForComboRunesId() != null) {
-            Inventory.getFirst(context.getRuneNeededForComboRunesId()).useOn(altar);
+        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldLocation(), 20, context.getConfig().altar().getAltarID());
+        if(context.getOppositeRuneIDForComboRune() != null) {
+            Inventory.getFirst(context.getOppositeRuneIDForComboRune()).useOn(altar);
         } else {
             altar.interact("Craft-rune");
         }
         this.interactedWithAltar = true;
     }
 
-    @Override
-    public void handleState(StateMachine stateMachine) {
-        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldArea().toWorldPoint(), 4, context.getConfig().altar().getAltarID());
-
+    private void destroyBindingNecklace() {
         if(Inventory.contains(ItemID.BINDING_NECKLACE) && !Dialog.isOpen()) {
             if (!Equipment.contains(ItemID.BINDING_NECKLACE)) {
                 Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Wear");
-            } else if (!Dialog.isOpen()) {
-                Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Destroy");
+                return;
             }
+
+            Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Destroy");
         }
 
-        if (Players.getLocal().isMoving() && interactedWithAltar) {
+        if (Dialog.isOpen()) {
+            Keyboard.type(1);
+        }
+    }
 
+    @Override
+    public void handleState(StateMachine stateMachine) {
+        ITileObject altar = TileObjects.getFirstSurrounding(Players.getLocal().getWorldLocation(), 4, context.getConfig().altar().getAltarID());
+
+        if (Players.getLocal().isMoving() && interactedWithAltar) {
+            // The imbue varbit contains the seconds remaining on Magic Imbue
             if (config.useImbue() && SpellBook.Lunar.MAGIC_IMBUE.canCast() &&
                     Vars.getBit(Varbits.MAGIC_IMBUE) == 0) {
                 SpellBook.Lunar.MAGIC_IMBUE.cast();
             }
 
-            if(Inventory.contains(ItemID.BINDING_NECKLACE) && !Dialog.isOpen()) {
-                if (!Equipment.contains(ItemID.BINDING_NECKLACE)) {
-                    Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Wear");
-                } else if (!Dialog.isOpen()) {
-                    Inventory.getFirst(ItemID.BINDING_NECKLACE).interact("Destroy");
-                }
-            }
-
-            if (Dialog.isOpen()) {
-                Keyboard.type(1);
-            }
+            destroyBindingNecklace();
         }
 
         if(!Movement.isWalking() && !interactedWithAltar) {
@@ -158,8 +148,8 @@ public class CraftRunes implements StateMachineInterface {
             emptyPouches();
             craftRunes(context);
         }
-
         context.checkTotalEssencesInInv();
+
         if (context.getTotalEssencesInInv() == 0) {
             context.checkChargesOnRote();
             if(config.isUsingRunners()) {
@@ -169,8 +159,6 @@ public class CraftRunes implements StateMachineInterface {
                 stateMachine.setState(new RechargeROTE(context), false);
             }
         }
-
-
     }
 
     @Override

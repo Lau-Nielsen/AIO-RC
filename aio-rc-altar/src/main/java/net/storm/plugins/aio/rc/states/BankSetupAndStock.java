@@ -6,6 +6,7 @@ import net.storm.api.items.loadouts.LoadoutItem;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
+import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
@@ -69,7 +70,7 @@ public class BankSetupAndStock implements StateMachineInterface {
 
     }
 
-    private void withDrawLoadoutFromBank() {
+    private void withdrawLoadoutFromBank() {
         AtomicInteger actionCount = new AtomicInteger(0);
 
         Random random = new Random();
@@ -116,8 +117,7 @@ public class BankSetupAndStock implements StateMachineInterface {
             }
         }
 
-        if (!inventoryEquipment.isEmpty() &&
-                inventoryEquipment.containsKey(context.getConfig().useDaeyalt() ? ItemID.DAEYALT_ESSENCE : ItemID.PURE_ESSENCE)) {
+        if (!inventoryEquipment.isEmpty()) {
             inventoryEquipment.remove(context.getConfig().useDaeyalt() ? ItemID.DAEYALT_ESSENCE : ItemID.PURE_ESSENCE);
         }
 
@@ -171,43 +171,45 @@ public class BankSetupAndStock implements StateMachineInterface {
             }
 
             if(!equipment.isEmpty() || !withdrawnEquipment.isEmpty() || !inventoryEquipment.isEmpty()) {
-                withDrawLoadoutFromBank();
+                withdrawLoadoutFromBank();
             }
 
+
+            // Set stock
             context.checkStaminaDoses();
             context.checkEssenceInBank();
             context.checkBindingNecklacesInBank();
-
             context.setUsingGlories(context.checkForGlories());
             if(context.isUsingGlories()) {
                 context.checkGloriesInBank();
             }
-
             context.setUsingDuelingRings(context.checkForDuelingRing());
             if(context.isUsingDuelingRings()) {
                 context.checkDuelingRingsInBank();
             }
 
+            // Check for equipment flags
             context.setUsingColossalPouch(context.checkForColossalPouch());
             context.setUsingGiantPouch(context.checkForGiantPouch());
             context.setUsingLargePouch(context.checkForLargePouch());
             context.setUsingMediumPouch(context.checkForMediumPouch());
             context.setUsingSmallPouch(context.checkForSmallPouch());
             context.setUsingEternalGlory(context.checkForEternalGlory());
-            context.setUsingRingOfElements(context.checkForRingOfElements());
+
+            // Combo rune requirement checks
             context.setComboRuneRequirementIds();
-            if(context.getTalismanNeededForComboRunes() != null && !context.getConfig().bringBindingNecklace()) {
+            if(context.getTalismanIDNeededForComboRune() != null && !context.getConfig().bringBindingNecklace()) {
                 context.checkRequiredTalismansInBank();
             }
             context.checkIfHatIsCatalytic();
 
+            context.setUsingRingOfElements(context.checkForRingOfElements());
             if(context.isUsingRingOfElements()) {
                 context.checkChargesOnRote();
             }
 
             if(checkedForLoadoutIds && equipment.isEmpty() &&
                     withdrawnEquipment.isEmpty() && inventoryEquipment.isEmpty()) {
-
                 stateMachine.setState(new Setup(context), false);
             }
         }

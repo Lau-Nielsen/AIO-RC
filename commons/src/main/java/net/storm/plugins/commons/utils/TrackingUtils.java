@@ -78,11 +78,13 @@ public class TrackingUtils {
             return "0";
         }
 
-        double rate = (amount / elapsedTimeHours) / getDivider(amount);
+        double rate = (amount / elapsedTimeHours);
 
-        DecimalFormat df = new DecimalFormat("#.00" + getUnit(amount));
+        double hourlyRate = rate / getDivider((long) rate);
 
-        return df.format(rate) + "/hr";
+        DecimalFormat df = new DecimalFormat("#.00" + getUnit((long) rate));
+
+        return df.format(hourlyRate) + "/hr";
     }
 
     public String totalAmount(long amount) {

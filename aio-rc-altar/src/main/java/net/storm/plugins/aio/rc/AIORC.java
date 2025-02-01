@@ -88,8 +88,8 @@ public class AIORC extends LoopedPlugin {
                     event.getKey().equals("airCombo") || event.getKey().equals("earthCombo") || event.getKey().equals("fireCombo") ||
                     event.getKey().equals("waterCombo")) {
                 stateMachine.setState(new BankSetupAndStock(context), true);
-                context.setRuneNeededForComboRunesId(null);
-                context.setTalismanNeededForComboRunes(null);
+                context.setOppositeRuneIDForComboRune(null);
+                context.setTalismanIDNeededForComboRune(null);
             }
         }
     }
@@ -107,6 +107,7 @@ public class AIORC extends LoopedPlugin {
 
         if(stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
             context.setCurrentRunningState(RunningState.PAUSED);
+            context.getTrackingUtils().pause();
         }
 
 

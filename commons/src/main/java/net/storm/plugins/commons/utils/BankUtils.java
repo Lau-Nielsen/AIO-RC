@@ -1,14 +1,8 @@
 package net.storm.plugins.commons.utils;
 
-import net.runelite.api.ItemID;
-import net.storm.api.domain.items.IBankInventoryItem;
 import net.storm.api.domain.items.IItem;
-import net.storm.plugins.commons.enums.RunningState;
 import net.storm.sdk.items.Bank;
-import net.storm.sdk.movement.Movement;
-import net.storm.sdk.utils.MessageUtils;
 
-import java.awt.*;
 import java.util.function.Predicate;
 
 public class BankUtils {
@@ -66,6 +60,54 @@ public class BankUtils {
 
         if (Bank.Inventory.contains(filter)) {
             Bank.depositAll(filter);
+        }
+    }
+
+    public void deposit(int itemID, int amount) {
+        if (!Bank.isOpen()) return;
+
+        if (Bank.Inventory.contains(itemID)) {
+            Bank.deposit(itemID, amount);
+        }
+    }
+
+    public void deposit(Predicate<IItem> filter, int amount) {
+        if (!Bank.isOpen()) return;
+
+        if (Bank.Inventory.contains(filter)) {
+            Bank.deposit(filter, amount);
+        }
+    }
+
+    public void withdraw(int itemID, int amount) {
+        if (!Bank.isOpen()) return;
+
+        if (Bank.contains(itemID)) {
+            Bank.withdraw(itemID, amount);
+        }
+    }
+
+    public void withdraw(Predicate<IItem> filter, int amount) {
+        if (!Bank.isOpen()) return;
+
+        if (Bank.contains(filter)) {
+            Bank.withdraw(filter, amount);
+        }
+    }
+
+    public void withdrawAll(int itemID) {
+        if (!Bank.isOpen()) return;
+
+        if (Bank.contains(itemID)) {
+            Bank.withdrawAll(itemID);
+        }
+    }
+
+    public void withdrawAll(Predicate<IItem> filter) {
+        if (!Bank.isOpen()) return;
+
+        if (Bank.contains(filter)) {
+            Bank.withdrawAll(filter);
         }
     }
 

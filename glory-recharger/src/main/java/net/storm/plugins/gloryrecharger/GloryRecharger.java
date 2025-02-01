@@ -89,6 +89,7 @@ public class GloryRecharger extends LoopedPlugin {
 
         if(stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
             context.setCurrentRunningState(RunningState.PAUSED);
+            context.getTrackingUtils().pause();
         }
 
         if (context.getCurrentRunningState() == RunningState.RUNNING) {

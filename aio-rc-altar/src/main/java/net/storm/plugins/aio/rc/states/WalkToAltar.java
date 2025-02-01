@@ -12,14 +12,12 @@ import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
 import net.storm.plugins.aio.rc.enums.Altar;
-import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.sdk.entities.NPCs;
 import net.storm.sdk.entities.Players;
 import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.game.GameThread;
 import net.storm.sdk.items.Bank;
-import net.storm.sdk.items.Inventory;
 import net.storm.sdk.movement.Movement;
 import net.storm.sdk.utils.MessageUtils;
 
@@ -46,38 +44,7 @@ public class WalkToAltar implements StateMachineInterface {
         }
     }
 
-    private void findClosestObstacleAndPass() {
-        IPlayer localPlayer = Players.getLocal();
-        WorldPoint myWorldPoint = localPlayer.getWorldArea().toWorldPoint();
-        Map<String, ITileObject> objects = new HashMap<>();
-        objects.put("Tendrils", TileObjects.getNearest( x -> x.hasAction("Chop") && x.getName().equals("Tendrils")));
-        objects.put("Rock", TileObjects.getNearest(x -> x.hasAction("Mine") && x.getName().equals("Rock")));
-        objects.put("Eyes", TileObjects.getNearest(x -> x.hasAction("Distract") && x.getName().equals("Eyes")));
-        objects.put("Boil", TileObjects.getNearest(x -> x.hasAction("Boil") && x.getName().equals("Boil")));
-        objects.put("Gap", TileObjects.getNearest(x -> x.hasAction("Squeeze-through") && x.getName().equals("Gap")));
-        objects.put("Passage", TileObjects.getNearest( x -> x.hasAction("Pass-through") && x.getName().equals("Passage")));
-
-        Set<String> allowedObjects = getStringSet();
-
-        ITileObject closestObject = objects.entrySet().stream()
-                .filter(entry -> allowedObjects.contains(entry.getKey()))
-                .map(Map.Entry::getValue)
-                .filter(Objects::nonNull)
-                .min(Comparator.comparingInt(obj -> obj.distanceTo(myWorldPoint)))
-                .orElse(null);
-
-        if (closestObject != null) {
-            GameThread.invokeAndWait(() -> closestObject.interact(0));
-            if (localPlayer.isMoving()) {
-                this.startCounting = true;
-            }
-        } else {
-            MessageUtils.addMessage("Couldn't find a passage... tping to bank");
-            Bank.open(context.getConfig().bank().getBankLocation());
-        }
-    }
-
-    private Set<String> getStringSet() {
+    private Set<String> getAllowedAbyssObstacles() {
         Set<String> allowedObjects = new HashSet<>();
 
         if (context.getConfig().abyssEyes()) {
@@ -104,6 +71,38 @@ public class WalkToAltar implements StateMachineInterface {
             allowedObjects.add("Tendrils");
         }
         return allowedObjects;
+    }
+
+
+    private void findClosestObstacleAndPass() {
+        IPlayer localPlayer = Players.getLocal();
+        WorldPoint myWorldPoint = localPlayer.getWorldArea().toWorldPoint();
+        Map<String, ITileObject> objects = new HashMap<>();
+        objects.put("Tendrils", TileObjects.getNearest( x -> x.hasAction("Chop") && x.getName() != null && x.getName().equals("Tendrils")));
+        objects.put("Rock", TileObjects.getNearest(x -> x.hasAction("Mine") && x.getName() != null && x.getName().equals("Rock")));
+        objects.put("Eyes", TileObjects.getNearest(x -> x.hasAction("Distract") && x.getName() != null &&  x.getName().equals("Eyes")));
+        objects.put("Boil", TileObjects.getNearest(x -> x.hasAction("Boil") && x.getName() != null &&  x.getName().equals("Boil")));
+        objects.put("Gap", TileObjects.getNearest(x -> x.hasAction("Squeeze-through") && x.getName() != null &&  x.getName().equals("Gap")));
+        objects.put("Passage", TileObjects.getNearest( x -> x.hasAction("Pass-through") && x.getName() != null &&  x.getName().equals("Passage")));
+
+        Set<String> allowedObjects = getAllowedAbyssObstacles();
+
+        ITileObject closestObject = objects.entrySet().stream()
+                .filter(entry -> allowedObjects.contains(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .filter(Objects::nonNull)
+                .min(Comparator.comparingInt(obj -> obj.distanceTo(myWorldPoint)))
+                .orElse(null);
+
+        if (closestObject != null) {
+            GameThread.invokeAndWait(() -> closestObject.interact(0));
+            if (localPlayer.isMoving()) {
+                this.startCounting = true;
+            }
+        } else {
+            MessageUtils.addMessage("Couldn't find a passage... tping to bank");
+            Bank.open(context.getConfig().bank().getBankLocation());
+        }
     }
 
     public void enterRuins(Altar altar) {
@@ -150,17 +149,20 @@ public class WalkToAltar implements StateMachineInterface {
             INPC zamorakMage = NPCs.getNearest(x -> x.hasAction("Teleport"));
             ITileObject abyssalRift = TileObjects.getNearest("Abyssal Rift");
             boolean isAbyssalRiftNull = abyssalRift == null;
-            boolean isInteractingWithCuck = false;
+            boolean isInteractingWithZammyMage = false;
+
+            int zamorakMageTpAnimationID = 1818;
+            int zamorakMageId = 2581;
 
             if (localPlayer.isInteracting()) {
-                isInteractingWithCuck = localPlayer.getInteracting().getId() == 2581;
+                isInteractingWithZammyMage = localPlayer.getInteracting().getId() == zamorakMageId;
             }
 
-            if(!Movement.isWalking() && !isInteractingWithCuck && zamorakMage == null && isAbyssalRiftNull) {
+            if(!Movement.isWalking() && !isInteractingWithZammyMage && zamorakMage == null && isAbyssalRiftNull) {
                 Movement.walkTo(new WorldArea(3105,3559,5,5,0));
             }
 
-            if(zamorakMage != null && !isInteractingWithCuck && zamorakMage.getAnimation() != 1818 && isAbyssalRiftNull) {
+            if(zamorakMage != null && !isInteractingWithZammyMage && zamorakMage.getAnimation() != zamorakMageTpAnimationID && isAbyssalRiftNull) {
                 zamorakMage.interact("Teleport");
             }
 
@@ -168,7 +170,7 @@ public class WalkToAltar implements StateMachineInterface {
                 findClosestObstacleAndPass();
             }
 
-            if (counter.get() > 50) {
+            if (counter.get() > 20) {
                 MessageUtils.addMessage("Something went wrong, let's try again :)");
                 counter.set(0);
                 startCounting = false;

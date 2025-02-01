@@ -25,19 +25,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SharedContext {
     private Integer chargesOnRingOfElement = 0; // done
     private AtomicInteger tripsCompleted = new AtomicInteger(0); // done
-    private Integer staminaDoses = 0; // done
+    private Integer staminaDosesInBank = 0; // done
     private Integer essenceInBank = 0; // done
+    private Integer talismansInBank; // done
     private Integer bindingNecklacesInBank = 0; // done
+    private Integer gloriesInBank = 0; // done
+    private Integer duelingRingsInBank = 0; // done
     private Integer essencesTraded = 0;
     private Integer runesCrafted = 0; // done
     private Integer expGained = 0; // done
     private double  estimatedGpEarned = 0;
     private Integer totalEssencesInInv = 0; // done
-    private Integer duelingRingsInBank = 0; // done
-    private Integer gloriesInBank = 0; // done
-    private Integer runeNeededForComboRunesId; // done
-    private Integer talismanNeededForComboRunes; // done
-    private Integer talismansRemaining; // done
+    private Integer oppositeRuneIDForComboRune; // done
+    private Integer talismanIDNeededForComboRune; // done
     private boolean isUsingDuelingRings; // done
     private boolean isUsingGlories; // done
     private boolean isUsingEternalGlory; // done
@@ -174,8 +174,11 @@ public class SharedContext {
     public void checkIfHatIsCatalytic() {
         if(Equipment.contains(ItemID.HAT_OF_THE_EYE, ItemID.HAT_OF_THE_EYE_BLUE, ItemID.HAT_OF_THE_EYE_GREEN,
                 ItemID.HAT_OF_THE_EYE_RED)) {
-            this.isHatOfTheEyeCatalytic = Vars.getBit(13709) == 15;
+            int hatOfTheEyeAtonementID = 13709;
+            this.isHatOfTheEyeCatalytic = Vars.getBit(hatOfTheEyeAtonementID) == 15;
         }
+
+        System.out.println(this.isHatOfTheEyeCatalytic);
     }
 
     public boolean arePouchesFull() {
@@ -244,47 +247,47 @@ public class SharedContext {
     public void setComboRuneRequirementIds() {
         if (this.config.altar().name().equals("AIR")) {
             if (this.config.airCombo() != AirRunes.AIR_RUNE) {
-                runeNeededForComboRunesId = this.config.airCombo().getOppositeRuneId();
+                oppositeRuneIDForComboRune = this.config.airCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
-                    talismanNeededForComboRunes = this.config.airCombo().getOppositeTalismanId();
+                    talismanIDNeededForComboRune = this.config.airCombo().getOppositeTalismanId();
                 }
             }
         }
 
         if (this.config.altar().name().equals("EARTH")) {
             if (this.config.earthCombo() != EarthRunes.EARTH_RUNE) {
-                runeNeededForComboRunesId = this.config.earthCombo().getOppositeRuneId();
+                oppositeRuneIDForComboRune = this.config.earthCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
-                    talismanNeededForComboRunes = this.config.earthCombo().getOppositeTalismanId();
+                    talismanIDNeededForComboRune = this.config.earthCombo().getOppositeTalismanId();
                 }
             }
         }
 
         if (this.config.altar().name().equals("FIRE")) {
             if (this.config.fireCombo() != FireRunes.FIRE_RUNE) {
-                this.runeNeededForComboRunesId = this.config.fireCombo().getOppositeRuneId();
+                this.oppositeRuneIDForComboRune = this.config.fireCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
-                    talismanNeededForComboRunes = this.config.fireCombo().getOppositeTalismanId();
+                    talismanIDNeededForComboRune = this.config.fireCombo().getOppositeTalismanId();
                 }
             }
         }
 
         if (this.config.altar().name().equals("WATER")) {
             if (this.config.waterCombo() != WaterRunes.WATER_RUNES) {
-                this.runeNeededForComboRunesId = this.config.waterCombo().getOppositeRuneId();
+                this.oppositeRuneIDForComboRune = this.config.waterCombo().getOppositeRuneId();
                 if(!this.config.bringBindingNecklace()) {
-                    this.talismanNeededForComboRunes = this.config.waterCombo().getOppositeTalismanId();
+                    this.talismanIDNeededForComboRune = this.config.waterCombo().getOppositeTalismanId();
                 }
             }
         }
     }
 
     public void checkRequiredTalismansInBank() {
-        this.talismansRemaining = Bank.getCount(true, this.talismanNeededForComboRunes);
+        this.talismansInBank = Bank.getCount(true, this.talismanIDNeededForComboRune);
     }
 
     public int talismansToWithdraw() {
-        if (this.talismansRemaining != null && Inventory.getFreeSlots() != 0) {
+        if (this.talismansInBank != null && Inventory.getFreeSlots() != 0) {
             int maxEssence = maxEssenceCapacity();
             return (int) Math.ceil((double) maxEssence / Inventory.getFreeSlots());
         }
@@ -312,9 +315,9 @@ public class SharedContext {
     }
 
     public void checkStaminaDoses() {
-        this.staminaDoses = Bank.getCount(true, ItemID.STAMINA_POTION4) * 4;
-        this.staminaDoses += Bank.getCount(true, ItemID.STAMINA_POTION3) * 3;
-        this.staminaDoses += Bank.getCount(true, ItemID.STAMINA_POTION2) * 2;
-        this.staminaDoses += Bank.getCount(true, ItemID.STAMINA_POTION1);
+        this.staminaDosesInBank = Bank.getCount(true, ItemID.STAMINA_POTION4) * 4;
+        this.staminaDosesInBank += Bank.getCount(true, ItemID.STAMINA_POTION3) * 3;
+        this.staminaDosesInBank += Bank.getCount(true, ItemID.STAMINA_POTION2) * 2;
+        this.staminaDosesInBank += Bank.getCount(true, ItemID.STAMINA_POTION1);
     }
 }

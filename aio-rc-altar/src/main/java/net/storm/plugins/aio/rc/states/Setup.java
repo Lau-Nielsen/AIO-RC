@@ -75,7 +75,7 @@ public class Setup implements StateMachineInterface {
                 Equipment.getAll().stream().anyMatch(item -> tinderboxes.contains(item.getId()));
     }
 
-    private void abyssCheck() {
+    private void abyssObstacleRequirementCheck() {
         if(config.useAbyss()) {
             if(config.abyssRock() && !hasPickaxe()) {
                 MessageUtils.addMessage("Deselect rocks from abyss, or add a pickaxe to your loadout.", Color.red);
@@ -106,7 +106,7 @@ public class Setup implements StateMachineInterface {
 
     }
 
-    private void imbueCheck() {
+    private void imbueRequirementCheck() {
         if(config.useImbue() && !config.isRunner()) {
             if(!SpellBook.Lunar.MAGIC_IMBUE.haveRunesAvailable()) {
                 MessageUtils.addMessage("You're either missing runes to cast Imbue add them to the loadout.", Color.red);
@@ -139,7 +139,7 @@ public class Setup implements StateMachineInterface {
         return rcCapePerk;
     }
 
-    private void npcContactCheck() {
+    private void npcContactRequirementCheck() {
         boolean rcCapePerk = hasRcCapePerk();
 
         if(config.isRunner() || config.isUsingRunners()) {
@@ -172,7 +172,7 @@ public class Setup implements StateMachineInterface {
         forceAddressErrors = true;
     }
 
-    private void essencePouchCheck() {
+    private void essencePouchRequirementCheck() {
         Collection<LoadoutItem> items = config.loadout().getItems();
         int rcLevel = Skills.getLevel(Skill.RUNECRAFT);
 
@@ -218,14 +218,18 @@ public class Setup implements StateMachineInterface {
         }
     }
 
-    private void riftAccess() {
+    private void checkAltarAccessRequirements() {
         boolean inventoryCheck = false;
         boolean equipmentCheck = false;
 
         List<Integer> equipmentList = Equipment.getAll().stream().map(Identifiable::getId).collect(Collectors.toList());
-        boolean hatTiara = context.isHatOfTheEyeCatalytic();
+        boolean catalyticHat = context.isHatOfTheEyeCatalytic();
 
-        if(hatTiara) {
+        if(hasRcCapePerk()) {
+            return;
+        }
+
+        if(catalyticHat) {
             equipmentList.add(ItemID.CATALYTIC_TIARA);
         } else {
             equipmentList.add(ItemID.ELEMENTAL_TIARA);
@@ -260,11 +264,11 @@ public class Setup implements StateMachineInterface {
         questCheck(Quest.CHILDREN_OF_THE_SUN, Altar.SUNFIRE);
         questCheck(Quest.DRAGON_SLAYER_II, Altar.WRATH);
 
-        abyssCheck();
-        imbueCheck();
-        npcContactCheck();
-        essencePouchCheck();
-        riftAccess();
+        abyssObstacleRequirementCheck();
+        imbueRequirementCheck();
+        npcContactRequirementCheck();
+        essencePouchRequirementCheck();
+        checkAltarAccessRequirements();
 
         if(!forceAddressErrors) {
             stateMachine.setState(new Banking(context), true);

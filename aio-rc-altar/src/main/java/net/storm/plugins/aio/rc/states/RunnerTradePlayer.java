@@ -13,10 +13,8 @@ import net.storm.plugins.aio.rc.StateMachineInterface;
 import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.sdk.entities.Players;
-import net.storm.sdk.input.Keyboard;
 import net.storm.sdk.items.Inventory;
 import net.storm.sdk.items.Trade;
-import net.storm.sdk.widgets.Dialog;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -113,9 +111,11 @@ public class RunnerTradePlayer implements StateMachineInterface {
             if(!Trade.getAll(false, ItemID.PURE_ESSENCE).isEmpty()) {
                 if(Trade.isFirstScreenOpen() && !Trade.hasAcceptedFirstScreen(false)) {
                     Trade.accept();
+                    return;
                 }
                 if(Trade.isSecondScreenOpen() && !Trade.hasAcceptedSecondScreen(false)) {
                     Trade.accept();
+                    return;
                 }
             } else {
                 boolean containsBindingNecklace = Inventory.contains(ItemID.BINDING_NECKLACE);
@@ -123,6 +123,7 @@ public class RunnerTradePlayer implements StateMachineInterface {
                 if(containsBindingNecklace) {
                     Trade.offer(ItemID.BINDING_NECKLACE, 1);
                 }
+
                 Trade.offer(ItemID.PURE_ESSENCE, validatePureEssenceAmount(containsBindingNecklace));
             }
         }

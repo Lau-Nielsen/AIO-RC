@@ -12,13 +12,10 @@ import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.sdk.entities.Players;
-import net.storm.sdk.entities.TileObjects;
 import net.storm.sdk.items.Inventory;
 import net.storm.sdk.items.Trade;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RecieveTrades implements StateMachineInterface {
@@ -69,7 +66,7 @@ public class RecieveTrades implements StateMachineInterface {
 
         if (player != null &&
                 !Trade.isOpen() && !Inventory.contains(ItemID.PURE_ESSENCE) &&
-                player.distanceTo(localPlayer.getWorldArea().toWorldPoint()) < 2 && tickSinceTrade.get() % config.resendTradeEvery() == 0) {
+                player.distanceTo(localPlayer.getWorldLocation()) < 2 && tickSinceTrade.get() % config.resendTradeEvery() == 0) {
             player.interact("Trade with");
             countFlag = true;
         }

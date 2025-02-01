@@ -3,7 +3,6 @@ package net.storm.plugins.aio.rc;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.text.DecimalFormat;
 
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.components.LineComponent;
@@ -82,7 +81,7 @@ class AIORCOverlay extends OverlayPanel
                     {
                         panelComponent.getChildren().add(LineComponent.builder()
                                 .left("Stamina doses:")
-                                .right(context.getStaminaDoses().toString())
+                                .right(context.getStaminaDosesInBank().toString())
                                 .build());
                     }
                 }
@@ -94,11 +93,11 @@ class AIORCOverlay extends OverlayPanel
                                 .build());
                     }
                 }
-                if (!config.bringBindingNecklace() && context.getTalismanNeededForComboRunes() != null) {
+                if (!config.bringBindingNecklace() && context.getTalismanIDNeededForComboRune() != null) {
                     {
                         panelComponent.getChildren().add(LineComponent.builder()
                                 .left("Talismans:")
-                                .right(context.getTalismansRemaining().toString())
+                                .right(context.getTalismansInBank().toString())
                                 .build());
                     }
                 }
