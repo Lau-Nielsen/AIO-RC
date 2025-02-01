@@ -177,8 +177,6 @@ public class SharedContext {
             int hatOfTheEyeAtonementID = 13709;
             this.isHatOfTheEyeCatalytic = Vars.getBit(hatOfTheEyeAtonementID) == 15;
         }
-
-        System.out.println(this.isHatOfTheEyeCatalytic);
     }
 
     public boolean arePouchesFull() {
