@@ -58,11 +58,11 @@ public class AIORC extends LoopedPlugin {
     public void onConfigButtonClicked(ConfigButtonClicked buttonClicked) {
         if (buttonClicked.getKey().equals("startPlugin")) {
             if (RunningState.RUNNING.equals(context.getCurrentRunningState())) {
-                context.pause();
+                context.getTrackingUtils().pause();
                 context.setCurrentRunningState(RunningState.STOPPED);
             } else {
                 context.setCurrentRunningState(RunningState.RUNNING);
-                context.start();
+                context.getTrackingUtils().start();
                 if(stateMachine != null && stateMachine.getCurrentStateName() == States.ForceAwaitErrors) {
                     stateMachine.setState(new Setup(context), false);
                 }

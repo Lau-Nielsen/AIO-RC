@@ -3,10 +3,8 @@ package net.storm.plugins.daeyalt;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
-import net.storm.plugins.commons.enums.RunningState;
 
 import java.awt.*;
-import java.text.DecimalFormat;
 
 class DaeyaltMinerOverlay extends OverlayPanel
 {
@@ -30,7 +28,7 @@ class DaeyaltMinerOverlay extends OverlayPanel
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("Time elapsed:")
-                        .right(context.trackingUtils.formatTime())
+                        .right(context.trackingUtils.getFormatedTime())
                         .build());
             }
 

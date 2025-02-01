@@ -62,6 +62,13 @@ public interface AIORCConfig extends Config {
     )
     String abyssConfig = "abyssConfig";
 
+    @ConfigSection(
+            name = "Overlay",
+            description = "Overlay config.",
+            position = 50
+    )
+    String overlayConfig = "overlayConfig";
+
     @ConfigItem(
             keyName = "loadout",
             name ="Loadout",
@@ -542,5 +549,29 @@ public interface AIORCConfig extends Config {
     default int resendTradeEvery()
     {
         return 3;
+    }
+
+    @ConfigItem(
+            keyName = "showOverlay",
+            name = "Show overlay",
+            position = 0,
+            description = "Should the overlay be shown",
+            section = overlayConfig
+    )
+    default boolean showOverlay()
+    {
+        return true;
+    }
+
+    @ConfigItem(
+            keyName = "showStock",
+            name = "Show stock",
+            position = 1,
+            description = "Should the overlay show the stock you have left of the items it's using?",
+            section = overlayConfig
+    )
+    default boolean showStock()
+    {
+        return true;
     }
 }

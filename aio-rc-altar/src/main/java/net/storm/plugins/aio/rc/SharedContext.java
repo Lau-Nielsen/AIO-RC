@@ -6,6 +6,7 @@ import lombok.Setter;
 import net.runelite.api.ItemID;
 import net.runelite.client.game.ItemVariationMapping;
 import net.storm.plugins.aio.rc.enums.*;
+import net.storm.plugins.commons.utils.TrackingUtils;
 import net.storm.sdk.game.Vars;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
@@ -13,7 +14,6 @@ import net.storm.sdk.items.Inventory;
 import net.storm.plugins.commons.enums.RunningState;
 
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,48 +53,13 @@ public class SharedContext {
     private String currentState; // done;
     private RunningState currentRunningState = RunningState.AWAITING_START; // done;
 
-    private long startTime;
-    private long totalElapsedTime = 0;
-    private boolean isTimeTracking = false;
-
+    @Getter
+    TrackingUtils trackingUtils = new TrackingUtils();
 
     @Getter
     private AIORCConfig config;
 
     public SharedContext (AIORCConfig config){ this.config = config;}
-
-    public void start() {
-        if (!isTimeTracking) {
-            this.startTime = System.currentTimeMillis();
-            this.isTimeTracking = true;
-        }
-    }
-
-    public void pause() {
-        if (isTimeTracking) {
-            this.totalElapsedTime += System.currentTimeMillis() - startTime;
-            this.isTimeTracking = false;
-        }
-    }
-
-    public long getElapsedTimeSeconds() {
-        if (isTimeTracking) {
-            return (totalElapsedTime + (System.currentTimeMillis() - startTime)) / 1000;
-        } else {
-            return totalElapsedTime / 1000;
-        }
-    }
-
-    public String formatTime() {
-        long totalTime = this.getElapsedTimeSeconds();
-
-        long hours = totalTime / 3600;
-        long minutes = (totalTime % 3600) / 60;
-        long seconds = (totalTime % 60);
-
-        // Format as HH:MM:SS.mmm with leading zeros
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
-    }
 
     public boolean checkForDuelingRing() {
         Collection<Integer> ringIds = ItemVariationMapping.getVariations(ItemVariationMapping.map(ItemID.RING_OF_DUELING8));
@@ -339,20 +304,6 @@ public class SharedContext {
         } else {
             this.currentlyCrafting = this.config.altar().getRune();
         }
-    }
-
-    public String calculateRatePerHour(long amount) {
-        double elapsedTimeHours = (double) getElapsedTimeSeconds() / 3600;
-
-        if (elapsedTimeHours == 0) {
-            return "0k";
-        }
-
-        double rate = (amount / elapsedTimeHours) / 1000;
-
-        DecimalFormat df = new DecimalFormat("#.00k");
-
-        return df.format(rate);
     }
 
     public boolean checkForBrokenPouch() {

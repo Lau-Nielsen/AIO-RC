@@ -31,7 +31,7 @@ public class TrackingUtils {
         }
     }
 
-    public String formatTime() {
+    public String getFormatedTime() {
         long totalTime = this.getElapsedTimeSeconds();
 
         long hours = totalTime / 3600;

@@ -35,7 +35,7 @@ class GloryRechargerOverlay extends OverlayPanel
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("Time elapsed:")
-                        .right(context.getTrackingUtils().formatTime())
+                        .right(context.getTrackingUtils().getFormatedTime())
                         .build());
             }
             {
