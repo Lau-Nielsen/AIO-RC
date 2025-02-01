@@ -8,7 +8,7 @@ import net.storm.plugins.aio.rc.AIORCConfig;
 import net.storm.plugins.aio.rc.SharedContext;
 import net.storm.plugins.aio.rc.StateMachine;
 import net.storm.plugins.aio.rc.StateMachineInterface;
-import net.storm.plugins.aio.rc.enums.RunningState;
+import net.storm.plugins.commons.enums.RunningState;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.plugins.aio.rc.enums.EssPouch;
 import net.storm.sdk.entities.Players;

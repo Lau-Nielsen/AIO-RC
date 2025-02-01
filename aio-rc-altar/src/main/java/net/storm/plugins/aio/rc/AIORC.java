@@ -12,7 +12,7 @@ import net.storm.api.events.ConfigButtonClicked;
 import net.storm.api.events.ConfigChanged;
 import net.storm.api.plugins.PluginDescriptor;
 import net.storm.api.plugins.config.ConfigManager;
-import net.storm.plugins.aio.rc.enums.RunningState;
+import net.storm.plugins.commons.enums.RunningState;
 import net.storm.plugins.aio.rc.enums.States;
 import net.storm.plugins.aio.rc.states.BankSetupAndStock;
 import net.storm.plugins.aio.rc.states.Setup;

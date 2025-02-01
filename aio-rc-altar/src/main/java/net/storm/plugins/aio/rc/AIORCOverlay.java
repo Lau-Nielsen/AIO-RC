@@ -9,7 +9,8 @@ import com.google.inject.Inject;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
-import net.storm.plugins.aio.rc.enums.RunningState;
+import net.storm.plugins.commons.enums.RunningState;
+
 
 class AIORCOverlay extends OverlayPanel
 {
