@@ -21,12 +21,14 @@ class AIORCOverlay extends OverlayPanel
         this.config = context.getConfig();
     }
 
-    DecimalFormat df = new DecimalFormat("#.00k");
-
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        if (context != null && config.showOverlay()) {;
+        if (context != null && config.showOverlay()) {
+            {
+                panelComponent.setPreferredSize(new Dimension(250,200));
+                panelComponent.setBackgroundColor(new Color(0, 60, 60, 50));
+            }
             {
                 panelComponent.getChildren().add(TitleComponent.builder()
                         .text("AIO RC: " + context.getCurrentRunningState())
@@ -60,8 +62,6 @@ class AIORCOverlay extends OverlayPanel
                         .right(context.getCurrentState())
                         .build());
             }
-
-
             {
                 panelComponent.getChildren().add(LineComponent.builder().build());
             }
@@ -131,7 +131,6 @@ class AIORCOverlay extends OverlayPanel
                 }
 
             }
-
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("Metrics:")

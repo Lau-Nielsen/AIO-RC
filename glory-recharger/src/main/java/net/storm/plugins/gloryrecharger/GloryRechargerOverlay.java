@@ -23,8 +23,8 @@ class GloryRechargerOverlay extends OverlayPanel
     {
         if (context != null && config.showOverlay()) {
             {
-                panelComponent.setPreferredSize(new Dimension(200,100));
-                panelComponent.setBackgroundColor(new Color(11, 40, 184, 30));
+                panelComponent.setPreferredSize(new Dimension(250,200));
+                panelComponent.setBackgroundColor(new Color(0, 60, 60, 50));
             }
             {
                 panelComponent.getChildren().add(TitleComponent.builder()

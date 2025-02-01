@@ -18,7 +18,11 @@ class DaeyaltMinerOverlay extends OverlayPanel
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        if (context != null) {;
+        if (context != null) {
+            {
+                panelComponent.setPreferredSize(new Dimension(250,200));
+                panelComponent.setBackgroundColor(new Color(0, 60, 60, 50));
+            }
             {
                 panelComponent.getChildren().add(TitleComponent.builder()
                         .text("Daeyalt Miner: " + context.getCurrentRunningState())
@@ -31,18 +35,15 @@ class DaeyaltMinerOverlay extends OverlayPanel
                         .right(context.trackingUtils.getFormatedTime())
                         .build());
             }
-
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("State:")
                         .right(context.getCurrentState())
                         .build());
             }
-
             {
                 panelComponent.getChildren().add(LineComponent.builder().build());
             }
-
             {
                 panelComponent.getChildren().add(LineComponent.builder()
                         .left("Shards mined:")
