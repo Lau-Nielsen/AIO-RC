@@ -4,10 +4,8 @@ import com.google.inject.Singleton;
 import lombok.Getter;
 import lombok.Setter;
 import net.runelite.api.ItemID;
-import net.runelite.api.Skill;
 import net.runelite.client.game.ItemVariationMapping;
 import net.storm.plugins.aio.rc.enums.*;
-import net.storm.sdk.game.Skills;
 import net.storm.sdk.game.Vars;
 import net.storm.sdk.items.Bank;
 import net.storm.sdk.items.Equipment;
@@ -244,8 +242,8 @@ public class SharedContext {
     }
 
     public boolean hasBrokenPouch() {
-        return Inventory.contains(EssPouch.COLOSSAL.getBrokenItemID(), EssPouch.GIANT.getBrokenItemID(),
-                EssPouch.LARGE.getBrokenItemID(), EssPouch.MEDIUM.getBrokenItemID());
+        return Inventory.contains(EssPouch.COLOSSAL.getBrokenPouchId(), EssPouch.GIANT.getBrokenPouchId(),
+                EssPouch.LARGE.getBrokenPouchId(), EssPouch.MEDIUM.getBrokenPouchId());
     }
 
     public int maxEssenceCapacity() {
@@ -356,8 +354,8 @@ public class SharedContext {
     }
 
     public boolean checkForBrokenPouch() {
-        return Inventory.contains(EssPouch.GIANT.getBrokenItemID(), EssPouch.LARGE.getBrokenItemID(),
-                EssPouch.MEDIUM.getBrokenItemID(), EssPouch.COLOSSAL.getBrokenItemID());
+        return Inventory.contains(EssPouch.GIANT.getBrokenPouchId(), EssPouch.LARGE.getBrokenPouchId(),
+                EssPouch.MEDIUM.getBrokenPouchId(), EssPouch.COLOSSAL.getBrokenPouchId());
     }
 
     public void checkStaminaDoses() {

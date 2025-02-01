@@ -88,7 +88,7 @@ public enum EssPouch
     @Getter
     private final int itemID;
     @Getter
-    private final Integer brokenItemID;
+    private final Integer brokenPouchId;
 
     int scaleLimit(int limit) {
         return limit;
