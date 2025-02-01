@@ -41,7 +41,7 @@ public class Setup implements StateMachineInterface {
             this.forceAddressErrors = true;
         }
 
-        if (config.fountainTransport() == FountainTransportation.WILDERNESS_SWORD && Vars.getBit(Varbits.DIARY_WILDERNESS_HARD) == 1) {
+        if (config.fountainTransport() == FountainTransportation.WILDERNESS_SWORD && Vars.getBit(Varbits.DIARY_WILDERNESS_HARD) != 1) {
             MessageUtils.addMessage("You shouldn't be using the wilderness sword without the wildy elite diary...", Color.RED);
             this.forceAddressErrors = true;
         }
@@ -51,7 +51,7 @@ public class Setup implements StateMachineInterface {
             this.forceAddressErrors = true;
         }
 
-        if (Quests.isFinished(Quest.HEROES_QUEST)) {
+        if (!Quests.isFinished(Quest.HEROES_QUEST)) {
             MessageUtils.addMessage("You have to have heroes guild completed to rechagre glories...", Color.RED);
             this.forceAddressErrors = true;
         }

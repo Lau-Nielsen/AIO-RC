@@ -42,7 +42,7 @@ public class Banking implements StateMachineInterface {
         int animatingObeliskID = 14825;
         int obeliskDestinationVarbit = 4966;
 
-        ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 15,o -> o != null && o.hasAction("Activate"));
+        ITileObject obelisk = TileObjects.getFirstSurrounding(localPlayer.getWorldLocation(), 10,o -> o != null && o.hasAction("Activate"));
 
         if(!Movement.isWalking() && obelisk == null && TileObjects.getNearest(animatingObeliskID) == null && wildyUtils.wildyLevel() > 20) {
             Movement.walkTo(rougesCastle);
@@ -179,7 +179,7 @@ public class Banking implements StateMachineInterface {
             Bank.depositAll(ItemID.AMULET_OF_GLORY);
         }
 
-        if (!Bank.contains(ItemID.AMULET_OF_GLORY) || (Bank.getCount(true, ItemID.AMULET_OF_GLORY) + Bank.Inventory.getCount(false, ItemID.AMULET_OF_GLORY)) < context.getConfig().gloriesToBring()) {
+        if (Bank.getCount(true, ItemID.AMULET_OF_GLORY) + Bank.Inventory.getCount(false, ItemID.AMULET_OF_GLORY) < context.getConfig().gloriesToBring()) {
             if(config.restockGlories()) {
                 withdrawGETransportItem();
                 stateMachine.setState(new GESell(context), false);
@@ -187,7 +187,7 @@ public class Banking implements StateMachineInterface {
                 MessageUtils.addMessage("Out of glories, stopping plugin", Color.red);
                 context.setCurrentRunningState(RunningState.STOPPED);
             }
-        } else {
+        } else if (Bank.Inventory.getCount(false, ItemID.AMULET_OF_GLORY) < context.getConfig().gloriesToBring()) {
             Bank.withdraw(ItemID.AMULET_OF_GLORY, context.getConfig().gloriesToBring());
         }
     }

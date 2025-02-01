@@ -32,7 +32,6 @@ public class WalkToFountain implements StateMachineInterface {
     SharedContext context;
     GloryRechargerConfig config;
     AtomicInteger ticks = new AtomicInteger(0);
-    boolean ObeliskCompleteFlag = false;
     private final int fountainOfRuneID = 26782;
 
     WildyUtils wildyUtils = new WildyUtils();
@@ -55,7 +54,7 @@ public class WalkToFountain implements StateMachineInterface {
     }
 
     private void obeliskFountainRoute() {
-        if(config.fountainTransport() != FountainTransportation.OBELISK && this.ObeliskCompleteFlag) return;
+        if(config.fountainTransport() != FountainTransportation.OBELISK) return;
 
         WorldArea feroxObelisk = new WorldArea(3155, 3619, 3, 3, 0);
         IPlayer localPlayer = Players.getLocal();
@@ -157,10 +156,6 @@ public class WalkToFountain implements StateMachineInterface {
 
         wildyUtils.hopCheckAndHop(config.hopOnAttackablePlayer());
         context.handleProtectItem();
-
-        if(wildyUtils.wildyLevel() > 49) {
-            this.ObeliskCompleteFlag = true;
-        }
 
         if(Inventory.contains(ItemID.AMULET_OF_GLORY)) {
             if(fountainOfRune != null && fountainOfRune.distanceTo(localPlayer.getWorldArea().toWorldPoint()) < 10) {
